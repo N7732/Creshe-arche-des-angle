@@ -22,7 +22,7 @@ export default function Gallery({ initialCategory = 'All' }) {
   const fetchGalleries = async () => {
     setLoading(true);
     try {
-      const res = await fetch('http://localhost:5000/api/galleries');
+      const res = await fetch('https://backend-creshe.onrender.com/api/galleries');
       if (res.ok) {
         const data = await res.json();
         setGalleries(Array.isArray(data) ? data : []);

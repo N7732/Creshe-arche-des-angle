@@ -31,7 +31,7 @@ export default function Overview() {
       const token = localStorage.getItem('authToken');
       const authHeaders = { 'Authorization': `Bearer ${token}` };
 
-      const enrollmentsRes = await fetch('http://localhost:5000/api/enrollments', { headers: authHeaders });
+      const enrollmentsRes = await fetch('https://backend-creshe.onrender.com/api/enrollments', { headers: authHeaders });
       
       if (enrollmentsRes.status === 401) {
         localStorage.removeItem('authToken');
@@ -44,9 +44,9 @@ export default function Overview() {
         galleriesRes,
         messagesRes
       ] = await Promise.all([
-        fetch('http://localhost:5000/api/facilities').then(r => r.ok ? r.json() : []),
-        fetch('http://localhost:5000/api/galleries').then(r => r.ok ? r.json() : []),
-        fetch('http://localhost:5000/api/contact', { headers: authHeaders }).then(r => r.ok ? r.json() : [])
+        fetch('https://backend-creshe.onrender.com/api/facilities').then(r => r.ok ? r.json() : []),
+        fetch('https://backend-creshe.onrender.com/api/galleries').then(r => r.ok ? r.json() : []),
+        fetch('https://backend-creshe.onrender.com/api/contact', { headers: authHeaders }).then(r => r.ok ? r.json() : [])
       ]);
 
       const enrollmentsData = enrollmentsRes.ok ? await enrollmentsRes.json() : [];

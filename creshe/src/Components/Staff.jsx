@@ -13,7 +13,7 @@ export default function Staff() {
 
   const fetchStaff = async () => {
     try {
-      const res = await fetch('http://localhost:5000/api/team');
+      const res = await fetch('https://backend-creshe.onrender.com/api/team');
       if (res.ok) {
         const data = await res.json();
         // Map the properties from team_profiles to match what Staff.jsx expects

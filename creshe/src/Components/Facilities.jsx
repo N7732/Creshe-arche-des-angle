@@ -13,7 +13,7 @@ export default function Facilities({ handleNav }) {
 
   const fetchFacilities = async () => {
     try {
-      const res = await fetch('http://localhost:5000/api/facilities');
+      const res = await fetch('https://backend-creshe.onrender.com/api/facilities');
       if (res.ok) {
         const data = await res.json();
         setFacilities(Array.isArray(data) ? data : []);

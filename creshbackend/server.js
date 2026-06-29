@@ -24,7 +24,7 @@ app.use(helmet({
   crossOriginResourcePolicy: false, // Allow frontend to load images from the backend
 }));
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:5173', // Adjust to Vite's default port
+  origin: [process.env.FRONTEND_URL || 'http://localhost:5173', 'https://creshe.vercel.app', 'https://creshe.vercel.app/'],
   credentials: true
 }));
 

@@ -17,7 +17,7 @@ export default function WebSettings() {
   const fetchSettings = async () => {
     setLoading(true);
     try {
-      const res = await fetch('http://localhost:5000/api/settings');
+      const res = await fetch('https://backend-creshe.onrender.com/api/settings');
       const data = await res.json();
       
       const settingsMap = {};
@@ -42,7 +42,7 @@ export default function WebSettings() {
     setSaving(true);
     try {
       for (const [key, value] of Object.entries(settings)) {
-        await fetch('http://localhost:5000/api/settings', {
+        await fetch('https://backend-creshe.onrender.com/api/settings', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ key, value })

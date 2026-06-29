@@ -17,7 +17,7 @@ export default function Galleries() {
   const fetchGalleries = async () => {
     setLoading(true);
     try {
-      const res = await fetch('http://localhost:5000/api/galleries');
+      const res = await fetch('https://backend-creshe.onrender.com/api/galleries');
       const data = await res.json();
       setGalleries(data || []);
     } catch (error) {
@@ -48,7 +48,7 @@ export default function Galleries() {
       formData.append('title', newTitle);
       formData.append('category', newCategory);
 
-      const res = await fetch('http://localhost:5000/api/galleries', {
+      const res = await fetch('https://backend-creshe.onrender.com/api/galleries', {
         method: 'POST',
         body: formData
       });
@@ -69,7 +69,7 @@ export default function Galleries() {
   const handleDelete = async (id) => {
     if (!window.confirm('Are you sure you want to delete this image?')) return;
     try {
-      const res = await fetch(`http://localhost:5000/api/galleries/${id}`, { method: 'DELETE' });
+      const res = await fetch(`https://backend-creshe.onrender.com/api/galleries/${id}`, { method: 'DELETE' });
       if (!res.ok) throw new Error('Failed to delete');
       setGalleries(galleries.filter(g => g.id !== id));
     } catch (error) {

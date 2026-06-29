@@ -18,7 +18,7 @@ export default function Students() {
     setLoading(true);
     try {
       const token = localStorage.getItem('authToken');
-      const res = await fetch('http://localhost:5000/api/enrollments', {
+      const res = await fetch('https://backend-creshe.onrender.com/api/enrollments', {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (res.status === 401) {
@@ -43,7 +43,7 @@ export default function Students() {
   const updateStatus = async (id, newStatus) => {
     try {
       const token = localStorage.getItem('authToken');
-      const res = await fetch(`http://localhost:5000/api/enrollments/${id}/status`, {
+      const res = await fetch(`https://backend-creshe.onrender.com/api/enrollments/${id}/status`, {
         method: 'PUT',
         headers: { 
           'Content-Type': 'application/json',

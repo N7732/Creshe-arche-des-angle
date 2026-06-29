@@ -21,7 +21,7 @@ export default function Messages() {
 
   const fetchMessages = async () => {
     try {
-      const res = await fetch('http://localhost:5000/api/contact', {
+      const res = await fetch('https://backend-creshe.onrender.com/api/contact', {
         headers: { 'Authorization': `Bearer ${getToken()}` }
       });
       handle401(res);

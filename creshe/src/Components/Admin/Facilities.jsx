@@ -19,7 +19,7 @@ export default function Facilities() {
   const fetchFacilities = async () => {
     setLoading(true);
     try {
-      const res = await fetch('http://localhost:5000/api/facilities');
+      const res = await fetch('https://backend-creshe.onrender.com/api/facilities');
       const data = await res.json();
       setFacilities(data || []);
     } catch (error) {
@@ -44,7 +44,7 @@ export default function Facilities() {
       formData.append('description', newDesc);
       formData.append('category', newCategory);
 
-      const res = await fetch('http://localhost:5000/api/facilities', {
+      const res = await fetch('https://backend-creshe.onrender.com/api/facilities', {
         method: 'POST',
         body: formData
       });
@@ -69,7 +69,7 @@ export default function Facilities() {
   const handleDelete = async (id) => {
     if (!window.confirm('Are you sure you want to delete this facility?')) return;
     try {
-      const res = await fetch(`http://localhost:5000/api/facilities/${id}`, { method: 'DELETE' });
+      const res = await fetch(`https://backend-creshe.onrender.com/api/facilities/${id}`, { method: 'DELETE' });
       if (!res.ok) throw new Error('Failed to delete');
       setFacilities(facilities.filter(f => f.id !== id));
     } catch (error) {

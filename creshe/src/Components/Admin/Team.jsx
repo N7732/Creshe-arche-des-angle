@@ -33,7 +33,7 @@ export default function Team() {
   const fetchTeam = async () => {
     setLoading(true);
     try {
-      const res = await fetch('http://localhost:5000/api/team');
+      const res = await fetch('https://backend-creshe.onrender.com/api/team');
       const data = await res.json();
       setTeam(data || []);
     } catch (error) {
@@ -60,7 +60,7 @@ export default function Team() {
       formData.append('phone', newPhone);
       formData.append('bio', newBio);
 
-      const url = editingId ? `http://localhost:5000/api/team/${editingId}` : 'http://localhost:5000/api/team';
+      const url = editingId ? `https://backend-creshe.onrender.com/api/team/${editingId}` : 'https://backend-creshe.onrender.com/api/team';
       const method = editingId ? 'PUT' : 'POST';
 
       const res = await fetch(url, {
@@ -97,7 +97,7 @@ export default function Team() {
   const handleDelete = async (id) => {
     if (!window.confirm('Are you sure you want to delete this team member?')) return;
     try {
-      const res = await fetch(`http://localhost:5000/api/team/${id}`, { 
+      const res = await fetch(`https://backend-creshe.onrender.com/api/team/${id}`, { 
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${getAuthToken()}`

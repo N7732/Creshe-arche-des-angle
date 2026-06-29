@@ -9,7 +9,7 @@ export default function Home({ onNav }) {
 
   useEffect(() => {
     const fetchSettings = async () => {
-        const res = await fetch('http://localhost:5000/api/settings/home_video_url');
+        const res = await fetch('https://backend-creshe.onrender.com/api/settings/home_video_url');
         if (res.ok) {
           const data = await res.json();
           if (data && data.value) {
