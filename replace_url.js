@@ -9,8 +9,8 @@ function findAndReplace(dir) {
       findAndReplace(fullPath);
     } else if (fullPath.endsWith('.jsx') || fullPath.endsWith('.js')) {
       let content = fs.readFileSync(fullPath, 'utf8');
-      if (content.includes('https://backend-creshe.onrender.com')) {
-        content = content.replace(/https:\/\/backend-creshe\.onrender\.com/g, 'http://localhost:5000');
+      if (content.includes('http://localhost:5000')) {
+        content = content.replace(/http:\/\/localhost:5000/g, 'https://backend-creshe.onrender.com');
         fs.writeFileSync(fullPath, content);
         console.log(`Updated ${fullPath}`);
       }

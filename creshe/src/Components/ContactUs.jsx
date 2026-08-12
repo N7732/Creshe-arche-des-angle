@@ -18,7 +18,7 @@ export default function ContactUs() {
   const [errors, setErrors] = useState({});
   const [isSubmitted, setIsSubmitted] = useState(false);
   
-  const { data: settingsData } = useSWR('http://localhost:5000/api/settings', fetcher);
+  const { data: settingsData } = useSWR('https://backend-creshe.onrender.com/api/settings', fetcher);
   
   const settings = React.useMemo(() => {
     const settingsObj = {};
@@ -50,7 +50,7 @@ export default function ContactUs() {
     e.preventDefault();
     if (validate()) {
       try {
-        const res = await fetch('http://localhost:5000/api/contact', {
+        const res = await fetch('https://backend-creshe.onrender.com/api/contact', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(formData)

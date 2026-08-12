@@ -25,7 +25,7 @@ export default function Staff() {
   const fetchProfiles = async () => {
     setLoading(true);
     try {
-      const response = await fetch('http://localhost:5000/api/auth/users', {
+      const response = await fetch('https://backend-creshe.onrender.com/api/auth/users', {
         headers: getAuthHeaders()
       });
       if (!response.ok) throw new Error('Failed to fetch users');
@@ -42,7 +42,7 @@ export default function Staff() {
     e.preventDefault();
     setInviting(true);
     try {
-      const response = await fetch('http://localhost:5000/api/auth/register', {
+      const response = await fetch('https://backend-creshe.onrender.com/api/auth/register', {
         method: 'POST',
         headers: getAuthHeaders(),
         body: JSON.stringify({
@@ -71,7 +71,7 @@ export default function Staff() {
   const deleteProfile = async (id, name) => {
     if (!window.confirm(`Are you sure you want to permanently delete the user: ${name}?`)) return;
     try {
-      const response = await fetch(`http://localhost:5000/api/auth/users/${id}`, {
+      const response = await fetch(`https://backend-creshe.onrender.com/api/auth/users/${id}`, {
         method: 'DELETE',
         headers: getAuthHeaders()
       });
@@ -93,7 +93,7 @@ export default function Staff() {
 
   const saveProfile = async (id) => {
     try {
-      const response = await fetch(`http://localhost:5000/api/auth/users/${id}`, {
+      const response = await fetch(`https://backend-creshe.onrender.com/api/auth/users/${id}`, {
         method: 'PUT',
         headers: getAuthHeaders(),
         body: JSON.stringify(editForm)

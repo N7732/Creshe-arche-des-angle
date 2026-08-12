@@ -29,7 +29,7 @@ export default function EnrollmentPortal() {
   const [enrollmentStatus, setEnrollmentStatus] = useState({ isOpen: true, loading: true });
 
   useEffect(() => {
-    fetch('http://localhost:5000/api/enrollments/status')
+    fetch('https://backend-creshe.onrender.com/api/enrollments/status')
       .then(res => res.json())
       .then(data => setEnrollmentStatus({ isOpen: data.isOpen, reason: data.reason, loading: false }))
       .catch(err => {
@@ -114,7 +114,7 @@ export default function EnrollmentPortal() {
         submissionDate: new Date().toLocaleDateString()
       };
 
-      const res = await fetch('http://localhost:5000/api/enrollments', {
+      const res = await fetch('https://backend-creshe.onrender.com/api/enrollments', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(dbPayload)
