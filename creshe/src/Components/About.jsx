@@ -12,8 +12,8 @@ import 'swiper/css/pagination';
 
 export default function About() {
   const { t } = useTranslation();
-  const { data: teamData } = useSWR(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/team`, fetcher);
-  const { data: testimoniesData } = useSWR(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/testimonies`, fetcher);
+  const { data: teamData } = useSWR(`https://creshe-arche-des-angle-2.onrender.com/api/team`, fetcher);
+  const { data: testimoniesData } = useSWR(`https://creshe-arche-des-angle-2.onrender.com/api/testimonies`, fetcher);
 
   const team = Array.isArray(teamData) ? teamData : [];
   const testimonies = Array.isArray(testimoniesData) ? testimoniesData : [];

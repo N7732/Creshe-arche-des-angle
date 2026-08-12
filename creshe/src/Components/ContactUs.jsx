@@ -18,7 +18,7 @@ export default function ContactUs() {
   const [errors, setErrors] = useState({});
   const [isSubmitted, setIsSubmitted] = useState(false);
   
-  const { data: settingsData } = useSWR(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/settings`, fetcher);
+  const { data: settingsData } = useSWR(`https://creshe-arche-des-angle-2.onrender.com/api/settings`, fetcher);
   
   const settings = React.useMemo(() => {
     const settingsObj = {};
@@ -50,7 +50,7 @@ export default function ContactUs() {
     e.preventDefault();
     if (validate()) {
       try {
-        const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/contact`, {
+        const res = await fetch(`https://creshe-arche-des-angle-2.onrender.com/api/contact`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(formData)

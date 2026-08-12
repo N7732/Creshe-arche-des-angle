@@ -6,7 +6,7 @@ import { fetcher } from '../../utils/fetcher';
 
 export default function AdminTestimonies() {
   const { t } = useTranslation();
-  const { data, isLoading } = useSWR(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/testimonies`, fetcher);
+  const { data, isLoading } = useSWR(`https://creshe-arche-des-angle-2.onrender.com/api/testimonies`, fetcher);
   const testimonies = Array.isArray(data) ? data : [];
   const loading = isLoading;
 
@@ -40,7 +40,7 @@ export default function AdminTestimonies() {
     };
 
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/testimonies`, {
+      const response = await fetch(`https://creshe-arche-des-angle-2.onrender.com/api/testimonies`, {
         method: 'POST',
         headers: {
           ...getAuthHeaders(),
@@ -57,7 +57,7 @@ export default function AdminTestimonies() {
       setMessage('');
       setRating(5);
       setImageUrl('');
-      mutate(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/testimonies`);
+      mutate(`https://creshe-arche-des-angle-2.onrender.com/api/testimonies`);
     } catch (error) {
       console.error('Create testimony error:', error);
       alert('Failed to add testimony.');
@@ -69,12 +69,12 @@ export default function AdminTestimonies() {
   const deleteTestimony = async (id, testimonyName) => {
     if (!window.confirm(`Are you sure you want to delete testimony by ${testimonyName}?`)) return;
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/testimonies/${id}`, {
+      const response = await fetch(`https://creshe-arche-des-angle-2.onrender.com/api/testimonies/${id}`, {
         method: 'DELETE',
         headers: getAuthHeaders()
       });
       if (!response.ok) throw new Error('Failed to delete testimony');
-      mutate(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/testimonies`);
+      mutate(`https://creshe-arche-des-angle-2.onrender.com/api/testimonies`);
     } catch (error) {
       console.error('Delete error:', error);
       alert('Failed to delete testimony.');

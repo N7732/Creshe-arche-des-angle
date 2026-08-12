@@ -7,7 +7,7 @@ import { fetcher } from '../utils/fetcher';
 
 export default function Facilities({ handleNav }) {
   const { t } = useTranslation();
-  const { data, isLoading } = useSWR(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/facilities`, fetcher);
+  const { data, isLoading } = useSWR(`https://creshe-arche-des-angle-2.onrender.com/api/facilities`, fetcher);
   const facilities = Array.isArray(data) ? data : [];
   const loading = isLoading;
 

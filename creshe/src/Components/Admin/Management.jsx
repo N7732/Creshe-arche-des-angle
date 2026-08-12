@@ -59,7 +59,7 @@ export default function Management() {
   const fetchAttendance = async () => {
     setAttendanceLoading(true);
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/management/attendance?date=${date}`, {
+      const res = await fetch(`https://creshe-arche-des-angle-2.onrender.com/api/management/attendance?date=${date}`, {
         headers: { 'Authorization': `Bearer ${getToken()}` }
       });
       handle401(res);
@@ -85,7 +85,7 @@ export default function Management() {
   const fetchAnalytics = async () => {
     setAnalyticsLoading(true);
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/management/attendance/stats?period=${analyticsPeriod}`, {
+      const res = await fetch(`https://creshe-arche-des-angle-2.onrender.com/api/management/attendance/stats?period=${analyticsPeriod}`, {
         headers: { 'Authorization': `Bearer ${getToken()}` }
       });
       handle401(res);
@@ -121,7 +121,7 @@ export default function Management() {
     const finalStatus = overrideStatus || record.status;
 
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/management/attendance`, {
+      const res = await fetch(`https://creshe-arche-des-angle-2.onrender.com/api/management/attendance`, {
         method: 'POST',
         headers: { 
           'Authorization': `Bearer ${getToken()}`,
@@ -155,7 +155,7 @@ export default function Management() {
   const fetchFeeding = async () => {
     setFeedingLoading(true);
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/management/feeding`, {
+      const res = await fetch(`https://creshe-arche-des-angle-2.onrender.com/api/management/feeding`, {
         headers: { 'Authorization': `Bearer ${getToken()}` }
       });
       handle401(res);
@@ -178,7 +178,7 @@ export default function Management() {
   const saveFeeding = async (enrollment_id) => {
     const record = feedingRecords.find(r => r.enrollment_id === enrollment_id);
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/management/feeding/${enrollment_id}`, {
+      const res = await fetch(`https://creshe-arche-des-angle-2.onrender.com/api/management/feeding/${enrollment_id}`, {
         method: 'PUT',
         headers: { 
           'Authorization': `Bearer ${getToken()}`,
@@ -206,7 +206,7 @@ export default function Management() {
   const fetchIncidents = async () => {
     setIncidentsLoading(true);
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/management/incidents`, {
+      const res = await fetch(`https://creshe-arche-des-angle-2.onrender.com/api/management/incidents`, {
         headers: { 'Authorization': `Bearer ${getToken()}` }
       });
       handle401(res);
@@ -223,7 +223,7 @@ export default function Management() {
 
   const fetchStudents = async () => {
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/management/students`, {
+      const res = await fetch(`https://creshe-arche-des-angle-2.onrender.com/api/management/students`, {
         headers: { 'Authorization': `Bearer ${getToken()}` }
       });
       handle401(res);
@@ -241,7 +241,7 @@ export default function Management() {
     if (!newIncident.enrollment_id || !newIncident.description) return alert('Please fill required fields.');
     setIsSubmitting(true);
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/management/incidents`, {
+      const res = await fetch(`https://creshe-arche-des-angle-2.onrender.com/api/management/incidents`, {
         method: 'POST',
         headers: { 
           'Authorization': `Bearer ${getToken()}`,
@@ -268,7 +268,7 @@ export default function Management() {
 
   const resolveIncident = async (id) => {
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/management/incidents/${id}/resolve`, {
+      const res = await fetch(`https://creshe-arche-des-angle-2.onrender.com/api/management/incidents/${id}/resolve`, {
         method: 'PUT',
         headers: { 'Authorization': `Bearer ${getToken()}` }
       });

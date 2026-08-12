@@ -6,7 +6,7 @@ import { fetcher } from '../../utils/fetcher';
 
 export default function Team() {
   const { t } = useTranslation();
-  const { data, isLoading } = useSWR(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/team`, fetcher);
+  const { data, isLoading } = useSWR(`https://creshe-arche-des-angle-2.onrender.com/api/team`, fetcher);
   const team = Array.isArray(data) ? data : [];
   const loading = isLoading;
 
@@ -50,7 +50,7 @@ export default function Team() {
         image_url: imageUrl
       };
 
-      const url = editingId ? `${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/team/${editingId}` : `${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/team`;
+      const url = editingId ? `https://creshe-arche-des-angle-2.onrender.com/api/team/${editingId}` : `https://creshe-arche-des-angle-2.onrender.com/api/team`;
       const method = editingId ? 'PUT' : 'POST';
 
       const res = await fetch(url, {
@@ -75,7 +75,7 @@ export default function Team() {
       setImageUrl('');
       setEditingId(null);
       
-      mutate(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/team`);
+      mutate(`https://creshe-arche-des-angle-2.onrender.com/api/team`);
     } catch (error) {
       console.error('Save error:', error);
       alert(editingId ? `Failed to update team member. ${error.message}` : `Failed to add team member. ${error.message}`);
@@ -87,14 +87,14 @@ export default function Team() {
   const handleDelete = async (id) => {
     if (!window.confirm('Are you sure you want to delete this team member?')) return;
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/team/${id}`, { 
+      const res = await fetch(`https://creshe-arche-des-angle-2.onrender.com/api/team/${id}`, { 
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${getAuthToken()}`
         }
       });
       if (!res.ok) throw new Error('Failed to delete');
-      mutate(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/team`);
+      mutate(`https://creshe-arche-des-angle-2.onrender.com/api/team`);
     } catch (error) {
       console.error('Error deleting:', error);
       alert('Failed to delete team member.');

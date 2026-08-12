@@ -7,7 +7,7 @@ import { fetcher } from '../utils/fetcher';
 
 export default function Staff() {
   const { t } = useTranslation();
-  const { data, isLoading } = useSWR(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/team`, fetcher);
+  const { data, isLoading } = useSWR(`https://creshe-arche-des-angle-2.onrender.com/api/team`, fetcher);
   const loading = isLoading;
 
   const staffMembers = React.useMemo(() => {

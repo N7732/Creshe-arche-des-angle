@@ -12,7 +12,7 @@ export default function WebSettings() {
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
 
-  const { data, isLoading } = useSWR(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/settings`, fetcher);
+  const { data, isLoading } = useSWR(`https://creshe-arche-des-angle-2.onrender.com/api/settings`, fetcher);
   const loading = isLoading;
 
   useEffect(() => {
@@ -33,13 +33,13 @@ export default function WebSettings() {
     setSaving(true);
     try {
       for (const [key, value] of Object.entries(settings)) {
-        await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/settings`, {
+        await fetch(`https://creshe-arche-des-angle-2.onrender.com/api/settings`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ key, value })
         });
       }
-      mutate(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/settings`);
+      mutate(`https://creshe-arche-des-angle-2.onrender.com/api/settings`);
       alert('Settings saved successfully!');
     } catch (error) {
       console.error('Error saving settings:', error);

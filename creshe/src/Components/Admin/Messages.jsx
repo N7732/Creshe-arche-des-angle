@@ -7,7 +7,7 @@ import { fetcher } from '../../utils/fetcher';
 
 export default function Messages() {
   const { t } = useTranslation();
-  const { data, error, isLoading } = useSWR(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/contact`, fetcher);
+  const { data, error, isLoading } = useSWR(`https://creshe-arche-des-angle-2.onrender.com/api/contact`, fetcher);
   
   useEffect(() => {
     if (error && error.status === 401) {

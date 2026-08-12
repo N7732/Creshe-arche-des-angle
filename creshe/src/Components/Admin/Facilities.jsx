@@ -6,7 +6,7 @@ import { fetcher } from '../../utils/fetcher';
 
 export default function Facilities() {
   const { t } = useTranslation();
-  const { data, isLoading } = useSWR(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/facilities`, fetcher);
+  const { data, isLoading } = useSWR(`https://creshe-arche-des-angle-2.onrender.com/api/facilities`, fetcher);
   const facilities = Array.isArray(data) ? data : [];
   const loading = isLoading;
 
@@ -33,7 +33,7 @@ export default function Facilities() {
         image_url: imageUrl
       };
 
-      const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/facilities`, {
+      const res = await fetch(`https://creshe-arche-des-angle-2.onrender.com/api/facilities`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
@@ -46,7 +46,7 @@ export default function Facilities() {
       setNewCategory('Learning');
       setImageUrl('');
       
-      mutate(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/facilities`);
+      mutate(`https://creshe-arche-des-angle-2.onrender.com/api/facilities`);
     } catch (error) {
       console.error('Add error:', error);
       alert('Failed to add facility.');
@@ -58,9 +58,9 @@ export default function Facilities() {
   const handleDelete = async (id) => {
     if (!window.confirm('Are you sure you want to delete this facility?')) return;
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/facilities/${id}`, { method: 'DELETE' });
+      const res = await fetch(`https://creshe-arche-des-angle-2.onrender.com/api/facilities/${id}`, { method: 'DELETE' });
       if (!res.ok) throw new Error('Failed to delete');
-      mutate(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/facilities`);
+      mutate(`https://creshe-arche-des-angle-2.onrender.com/api/facilities`);
     } catch (error) {
       console.error('Error deleting:', error);
       alert('Failed to delete facility.');

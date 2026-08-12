@@ -7,7 +7,7 @@ import { fetcher } from '../../utils/fetcher';
 
 export default function Galleries() {
   const { t } = useTranslation();
-  const { data, isLoading } = useSWR(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/galleries`, fetcher);
+  const { data, isLoading } = useSWR(`https://creshe-arche-des-angle-2.onrender.com/api/galleries`, fetcher);
   const galleries = Array.isArray(data) ? data : [];
   const loading = isLoading;
 
@@ -35,7 +35,7 @@ export default function Galleries() {
         image_url: imageUrl
       };
 
-      const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/galleries`, {
+      const res = await fetch(`https://creshe-arche-des-angle-2.onrender.com/api/galleries`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
@@ -45,7 +45,7 @@ export default function Galleries() {
       
       setNewTitle('');
       setImageUrl('');
-      mutate(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/galleries`);
+      mutate(`https://creshe-arche-des-angle-2.onrender.com/api/galleries`);
     } catch (error) {
       console.error('Upload error:', error);
       alert('Failed to upload image.');
@@ -57,9 +57,9 @@ export default function Galleries() {
   const handleDelete = async (id) => {
     if (!window.confirm('Are you sure you want to delete this image?')) return;
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/galleries/${id}`, { method: 'DELETE' });
+      const res = await fetch(`https://creshe-arche-des-angle-2.onrender.com/api/galleries/${id}`, { method: 'DELETE' });
       if (!res.ok) throw new Error('Failed to delete');
-      mutate(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/galleries`);
+      mutate(`https://creshe-arche-des-angle-2.onrender.com/api/galleries`);
     } catch (error) {
       console.error('Error deleting:', error);
       alert('Failed to delete image.');
