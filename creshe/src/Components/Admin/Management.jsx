@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Loader2, ClipboardCheck, Activity, Save, AlertTriangle, CheckCircle, Plus, Utensils, Check, X, BarChart3 } from 'lucide-react';
+import { Loader2, ClipboardCheck, Activity, Save, AlertTriangle, CheckCircle, Plus, Utensils, Check, X, BarChart3, ArrowLeftRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
+import { useTranslation } from 'react-i18next';
 
 export default function Management() {
+  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState('Attendance');
   
   // Attendance State
@@ -57,7 +59,7 @@ export default function Management() {
   const fetchAttendance = async () => {
     setAttendanceLoading(true);
     try {
-      const res = await fetch(`https://backend-creshe.onrender.com/api/management/attendance?date=${date}`, {
+      const res = await fetch(`http://localhost:5000/api/management/attendance?date=${date}`, {
         headers: { 'Authorization': `Bearer ${getToken()}` }
       });
       handle401(res);
@@ -83,7 +85,7 @@ export default function Management() {
   const fetchAnalytics = async () => {
     setAnalyticsLoading(true);
     try {
-      const res = await fetch(`https://backend-creshe.onrender.com/api/management/attendance/stats?period=${analyticsPeriod}`, {
+      const res = await fetch(`http://localhost:5000/api/management/attendance/stats?period=${analyticsPeriod}`, {
         headers: { 'Authorization': `Bearer ${getToken()}` }
       });
       handle401(res);
@@ -119,7 +121,7 @@ export default function Management() {
     const finalStatus = overrideStatus || record.status;
 
     try {
-      const res = await fetch('https://backend-creshe.onrender.com/api/management/attendance', {
+      const res = await fetch('http://localhost:5000/api/management/attendance', {
         method: 'POST',
         headers: { 
           'Authorization': `Bearer ${getToken()}`,
@@ -153,7 +155,7 @@ export default function Management() {
   const fetchFeeding = async () => {
     setFeedingLoading(true);
     try {
-      const res = await fetch(`https://backend-creshe.onrender.com/api/management/feeding`, {
+      const res = await fetch(`http://localhost:5000/api/management/feeding`, {
         headers: { 'Authorization': `Bearer ${getToken()}` }
       });
       handle401(res);
@@ -176,7 +178,7 @@ export default function Management() {
   const saveFeeding = async (enrollment_id) => {
     const record = feedingRecords.find(r => r.enrollment_id === enrollment_id);
     try {
-      const res = await fetch(`https://backend-creshe.onrender.com/api/management/feeding/${enrollment_id}`, {
+      const res = await fetch(`http://localhost:5000/api/management/feeding/${enrollment_id}`, {
         method: 'PUT',
         headers: { 
           'Authorization': `Bearer ${getToken()}`,
@@ -204,7 +206,7 @@ export default function Management() {
   const fetchIncidents = async () => {
     setIncidentsLoading(true);
     try {
-      const res = await fetch('https://backend-creshe.onrender.com/api/management/incidents', {
+      const res = await fetch('http://localhost:5000/api/management/incidents', {
         headers: { 'Authorization': `Bearer ${getToken()}` }
       });
       handle401(res);
@@ -221,7 +223,7 @@ export default function Management() {
 
   const fetchStudents = async () => {
     try {
-      const res = await fetch('https://backend-creshe.onrender.com/api/management/students', {
+      const res = await fetch('http://localhost:5000/api/management/students', {
         headers: { 'Authorization': `Bearer ${getToken()}` }
       });
       handle401(res);
@@ -239,7 +241,7 @@ export default function Management() {
     if (!newIncident.enrollment_id || !newIncident.description) return alert('Please fill required fields.');
     setIsSubmitting(true);
     try {
-      const res = await fetch('https://backend-creshe.onrender.com/api/management/incidents', {
+      const res = await fetch('http://localhost:5000/api/management/incidents', {
         method: 'POST',
         headers: { 
           'Authorization': `Bearer ${getToken()}`,
@@ -266,7 +268,7 @@ export default function Management() {
 
   const resolveIncident = async (id) => {
     try {
-      const res = await fetch(`https://backend-creshe.onrender.com/api/management/incidents/${id}/resolve`, {
+      const res = await fetch(`http://localhost:5000/api/management/incidents/${id}/resolve`, {
         method: 'PUT',
         headers: { 'Authorization': `Bearer ${getToken()}` }
       });
@@ -296,35 +298,35 @@ export default function Management() {
       {/* Header */}
       <div className="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-extrabold text-slate-800 tracking-tight">Daily Class Management</h1>
-          <p className="text-slate-500 font-medium mt-1">Roll-call, Feeding Restrictions, and Health monitoring.</p>
+          <h1 className="text-3xl font-extrabold text-slate-100 tracking-tight">{t('admin.management.title')}</h1>
+          <p className="text-slate-300 font-medium mt-1">{t('admin.management.sub')}</p>
         </div>
         
         {/* Tabs */}
-        <div className="flex flex-wrap items-center gap-2 bg-white p-1 rounded-xl shadow-sm border border-slate-100">
+        <div className="flex flex-wrap items-center gap-2 bg-white text-slate-900 p-1 rounded-xl shadow-sm border border-slate-100">
           <button
             onClick={() => setActiveTab('Attendance')}
             className={`flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-bold transition-all ${
-              activeTab === 'Attendance' ? 'bg-indigo-50 text-indigo-700 shadow-sm' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-50'
+              activeTab === 'Attendance' ? 'bg-indigo-50 text-indigo-700 shadow-sm' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-50 text-slate-900'
             }`}
           >
-            <ClipboardCheck className="w-4 h-4" /> Roll-Call
+            <ClipboardCheck className="w-4 h-4" /> {t('admin.management.roll_call')}
           </button>
           <button
             onClick={() => setActiveTab('Feeding')}
             className={`flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-bold transition-all ${
-              activeTab === 'Feeding' ? 'bg-orange-50 text-orange-700 shadow-sm' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-50'
+              activeTab === 'Feeding' ? 'bg-orange-50 text-orange-700 shadow-sm' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-50 text-slate-900'
             }`}
           >
-            <Utensils className="w-4 h-4" /> Feeding
+            <Utensils className="w-4 h-4" /> {t('admin.management.feeding')}
           </button>
           <button
             onClick={() => setActiveTab('Incidents')}
             className={`flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-bold transition-all ${
-              activeTab === 'Incidents' ? 'bg-rose-50 text-rose-700 shadow-sm' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-50'
+              activeTab === 'Incidents' ? 'bg-rose-50 text-rose-700 shadow-sm' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-50 text-slate-900'
             }`}
           >
-            <Activity className="w-4 h-4" /> Health & Incidents
+            <Activity className="w-4 h-4" /> {t('admin.management.health')}
           </button>
         </div>
       </div>
@@ -342,7 +344,7 @@ export default function Management() {
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div className="bg-indigo-50 border border-indigo-100 p-4 rounded-[20px] shadow-sm flex items-center justify-between">
                   <div>
-                    <p className="text-xs font-bold text-indigo-600/80 uppercase tracking-wide">Attended</p>
+                    <p className="text-xs font-bold text-indigo-600/80 uppercase tracking-wide">{t('admin.management.attended')}</p>
                     <h3 className="text-3xl font-black text-indigo-700 mt-1">{attendedCount}</h3>
                   </div>
                   <div className="w-10 h-10 rounded-full bg-indigo-500/20 text-indigo-700 flex items-center justify-center">
@@ -351,7 +353,7 @@ export default function Management() {
                 </div>
                 <div className="bg-slate-100 border border-slate-200 p-4 rounded-[20px] shadow-sm flex items-center justify-between">
                   <div>
-                    <p className="text-xs font-bold text-slate-500 uppercase tracking-wide">Absent</p>
+                    <p className="text-xs font-bold text-slate-500 uppercase tracking-wide">{t('admin.management.absent')}</p>
                     <h3 className="text-3xl font-black text-slate-600 mt-1">{absentCount}</h3>
                   </div>
                   <div className="w-10 h-10 rounded-full bg-slate-200 text-slate-600 flex items-center justify-center">
@@ -373,31 +375,31 @@ export default function Management() {
               </div>
             )}
 
-            <div className="bg-white rounded-[24px] shadow-sm border border-slate-100 overflow-hidden">
-              <div className="p-4 sm:p-6 border-b border-slate-100 flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-slate-50/50">
-                <div className="flex items-center gap-2 p-1 bg-white rounded-xl shadow-sm border border-slate-200 shrink-0">
+            <div className="bg-white text-slate-900 rounded-[24px] shadow-sm border border-slate-100 overflow-hidden">
+              <div className="p-4 sm:p-6 border-b border-slate-100 flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-slate-50 text-slate-900/50">
+                <div className="flex items-center gap-2 p-1 bg-white text-slate-900 rounded-xl shadow-sm border border-slate-200 shrink-0">
                   <button 
                     onClick={() => setAttendanceMode('daily')}
-                    className={`px-4 py-2 rounded-lg text-sm font-bold transition-colors ${attendanceMode === 'daily' ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-500 hover:bg-slate-50'}`}
+                    className={`px-4 py-2 rounded-lg text-sm font-bold transition-colors ${attendanceMode === 'daily' ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-500 hover:bg-slate-50 text-slate-900'}`}
                   >
-                    Daily Entry
+                    {t('admin.management.daily')}
                   </button>
                   <button 
                     onClick={() => setAttendanceMode('analytics')}
-                    className={`px-4 py-2 rounded-lg text-sm font-bold transition-colors ${attendanceMode === 'analytics' ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-500 hover:bg-slate-50'}`}
+                    className={`px-4 py-2 rounded-lg text-sm font-bold transition-colors ${attendanceMode === 'analytics' ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-500 hover:bg-slate-50 text-slate-900'}`}
                   >
-                    Analytics
+                    {t('admin.management.analytics')}
                   </button>
                 </div>
 
                 {attendanceMode === 'daily' ? (
                   <div className="flex items-center gap-3 w-full lg:w-auto ml-auto">
-                    <span className="text-sm font-bold text-slate-500">Date:</span>
+                    <span className="text-sm font-bold text-slate-500">{t('admin.management.date')}</span>
                     <input 
                       type="date" 
                       value={date}
                       onChange={(e) => setDate(e.target.value)}
-                      className="flex-1 lg:flex-none px-4 py-2 bg-white border border-slate-200 rounded-xl text-sm font-medium focus:ring-2 focus:ring-indigo-500 outline-none"
+                      className="flex-1 lg:flex-none px-4 py-2 bg-white text-slate-900 border border-slate-200 rounded-xl text-sm font-medium focus:ring-2 focus:ring-indigo-500 outline-none"
                     />
                   </div>
                 ) : (
@@ -406,7 +408,7 @@ export default function Management() {
                     <select
                       value={analyticsPeriod}
                       onChange={(e) => setAnalyticsPeriod(e.target.value)}
-                      className="flex-1 lg:flex-none px-4 py-2 bg-white border border-slate-200 rounded-xl text-sm font-medium focus:ring-2 focus:ring-indigo-500 outline-none"
+                      className="flex-1 lg:flex-none px-4 py-2 bg-white text-slate-900 border border-slate-200 rounded-xl text-sm font-medium focus:ring-2 focus:ring-indigo-500 outline-none"
                     >
                       <option value="week">Past 7 Days</option>
                       <option value="semester">Past 3 Months</option>
@@ -420,11 +422,16 @@ export default function Management() {
                 attendanceLoading ? (
                   <div className="p-12 flex justify-center"><Loader2 className="w-8 h-8 animate-spin text-indigo-500" /></div>
                 ) : attendanceRecords.length === 0 ? (
-                  <div className="p-12 text-center text-slate-500 font-medium">No active enrolled students found.</div>
+                  <div className="p-12 text-center text-slate-500 font-medium">{t('admin.management.empty')}</div>
                 ) : (
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-left text-sm">
-                      <thead className="bg-slate-50 text-slate-600 font-bold border-b border-slate-100">
+                  {/* SWIPE HINT MOBILE */}
+                <div className="md:hidden flex items-center justify-end gap-1 text-xs text-slate-400 font-medium mb-3 mt-4">
+                  <ArrowLeftRight className="w-3 h-3" /> {t('admin.swipe_hint')}
+                </div>
+
+                <div className="overflow-x-auto">
+                    <table className="w-full text-left text-sm whitespace-nowrap">
+                      <thead className="bg-slate-50 text-slate-900 text-slate-600 font-bold border-b border-slate-100">
                         <tr>
                           <th className="px-6 py-4">Student Name</th>
                           <th className="px-6 py-4">Schedule & Info</th>
@@ -437,7 +444,7 @@ export default function Management() {
                       </thead>
                       <tbody className="divide-y divide-slate-50">
                         {attendanceRecords.map(record => (
-                          <tr key={record.enrollment_id} className="hover:bg-slate-50/30 transition-colors">
+                          <tr key={record.enrollment_id} className="hover:bg-slate-50 text-slate-900/30 transition-colors">
                             <td className="px-6 py-4">
                               <div className="font-bold text-slate-800">{record.childName}</div>
                               <div className="text-xs text-slate-500 mt-0.5">{record.parentName} ({record.parentPhone})</div>
@@ -455,7 +462,7 @@ export default function Management() {
                                   className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
                                     record.status === 'Present' 
                                       ? 'bg-emerald-100 text-emerald-700 border border-emerald-200 shadow-sm' 
-                                      : 'bg-slate-50 text-slate-400 hover:bg-slate-100'
+                                      : 'bg-slate-50 text-slate-900 text-slate-400 hover:bg-slate-100'
                                   }`}
                                 >
                                   Present
@@ -465,7 +472,7 @@ export default function Management() {
                                   className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
                                     record.status === 'Absent' 
                                       ? 'bg-rose-100 text-rose-700 border border-rose-200 shadow-sm' 
-                                      : 'bg-slate-50 text-slate-400 hover:bg-slate-100'
+                                      : 'bg-slate-50 text-slate-900 text-slate-400 hover:bg-slate-100'
                                   }`}
                                 >
                                   Absent
@@ -477,7 +484,7 @@ export default function Management() {
                                 type="time" 
                                 value={record.formArrival}
                                 onChange={e => handleAttendanceChange(record.enrollment_id, 'formArrival', e.target.value)}
-                                className="px-2 py-1.5 bg-white border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none w-28"
+                                className="px-2 py-1.5 bg-white text-slate-900 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none w-28"
                               />
                             </td>
                             <td className="px-6 py-4">
@@ -485,7 +492,7 @@ export default function Management() {
                                 type="time" 
                                 value={record.formDeparture}
                                 onChange={e => handleAttendanceChange(record.enrollment_id, 'formDeparture', e.target.value)}
-                                className="px-2 py-1.5 bg-white border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none w-28"
+                                className="px-2 py-1.5 bg-white text-slate-900 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none w-28"
                               />
                             </td>
                             <td className="px-6 py-4">
@@ -494,7 +501,7 @@ export default function Management() {
                                 placeholder="Reason if late/absent..."
                                 value={record.formReason}
                                 onChange={e => handleAttendanceChange(record.enrollment_id, 'formReason', e.target.value)}
-                                className="px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none w-full min-w-[120px]"
+                                className="px-3 py-1.5 bg-white text-slate-900 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none w-full min-w-[120px]"
                               />
                             </td>
                             <td className="px-6 py-4 text-center">
@@ -524,9 +531,14 @@ export default function Management() {
                 ) : analyticsData.length === 0 ? (
                   <div className="p-12 text-center text-slate-500 font-medium">No analytics data available.</div>
                 ) : (
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-left text-sm">
-                      <thead className="bg-slate-50 text-slate-600 font-bold border-b border-slate-100">
+                  {/* SWIPE HINT MOBILE */}
+                <div className="md:hidden flex items-center justify-end gap-1 text-xs text-slate-400 font-medium mb-3 mt-4">
+                  <ArrowLeftRight className="w-3 h-3" /> {t('admin.swipe_hint')}
+                </div>
+
+                <div className="overflow-x-auto">
+                    <table className="w-full text-left text-sm whitespace-nowrap">
+                      <thead className="bg-slate-50 text-slate-900 text-slate-600 font-bold border-b border-slate-100">
                         <tr>
                           <th className="px-6 py-4">Student Name</th>
                           <th className="px-6 py-4 text-center">Expected Days</th>
@@ -537,7 +549,7 @@ export default function Management() {
                       </thead>
                       <tbody className="divide-y divide-slate-50">
                         {analyticsData.map(record => (
-                          <tr key={record.enrollment_id} className="hover:bg-slate-50/30 transition-colors">
+                          <tr key={record.enrollment_id} className="hover:bg-slate-50 text-slate-900/30 transition-colors">
                             <td className="px-6 py-4 font-bold text-slate-800">{record.childName}</td>
                             <td className="px-6 py-4 text-center font-medium text-slate-600">{record.expectedDays}</td>
                             <td className="px-6 py-4 text-center font-bold text-emerald-600">{record.attendedDays}</td>
@@ -572,7 +584,7 @@ export default function Management() {
             exit={{ opacity: 0, y: -10 }}
             className="space-y-6"
           >
-            <div className="bg-white rounded-[24px] shadow-sm border border-slate-100 overflow-hidden">
+            <div className="bg-white text-slate-900 rounded-[24px] shadow-sm border border-slate-100 overflow-hidden">
               <div className="p-6 border-b border-slate-100 flex items-center gap-4 bg-orange-50/30">
                 <div className="w-10 h-10 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center">
                   <Utensils className="w-5 h-5" />
@@ -586,9 +598,14 @@ export default function Management() {
               {feedingLoading ? (
                 <div className="p-12 flex justify-center"><Loader2 className="w-8 h-8 animate-spin text-orange-500" /></div>
               ) : (
+                {/* SWIPE HINT MOBILE */}
+                <div className="md:hidden flex items-center justify-end gap-1 text-xs text-slate-400 font-medium mb-3 mt-4">
+                  <ArrowLeftRight className="w-3 h-3" /> {t('admin.swipe_hint')}
+                </div>
+
                 <div className="overflow-x-auto">
-                  <table className="w-full text-left text-sm">
-                    <thead className="bg-slate-50 text-slate-600 font-bold border-b border-slate-100">
+                  <table className="w-full text-left text-sm whitespace-nowrap">
+                    <thead className="bg-slate-50 text-slate-900 text-slate-600 font-bold border-b border-slate-100">
                       <tr>
                         <th className="px-6 py-4">Student Name</th>
                         <th className="px-6 py-4">Age Group</th>
@@ -598,7 +615,7 @@ export default function Management() {
                     </thead>
                     <tbody className="divide-y divide-slate-50">
                       {feedingRecords.map(record => (
-                        <tr key={record.enrollment_id} className="hover:bg-slate-50/30 transition-colors group">
+                        <tr key={record.enrollment_id} className="hover:bg-slate-50 text-slate-900/30 transition-colors group">
                           <td className="px-6 py-4 font-bold text-slate-800">{record.childName}</td>
                           <td className="px-6 py-4 text-xs font-medium text-slate-600 capitalize">{record.ageGroup}</td>
                           <td className="px-6 py-4">
@@ -677,8 +694,8 @@ export default function Management() {
               
               {/* Form */}
               <div className="lg:col-span-1">
-                <div className="bg-white rounded-[24px] shadow-sm border border-slate-100 overflow-hidden sticky top-6">
-                  <div className="p-6 border-b border-slate-100 bg-slate-50/50">
+                <div className="bg-white text-slate-900 rounded-[24px] shadow-sm border border-slate-100 overflow-hidden sticky top-6">
+                  <div className="p-6 border-b border-slate-100 bg-slate-50 text-slate-900/50">
                     <h2 className="text-lg font-bold text-slate-800">Log New Incident</h2>
                     <p className="text-xs text-slate-500 mt-1">For medical or behavioral staff.</p>
                   </div>
@@ -689,7 +706,7 @@ export default function Management() {
                         required
                         value={newIncident.enrollment_id}
                         onChange={e => setNewIncident({...newIncident, enrollment_id: e.target.value})}
-                        className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-rose-500"
+                        className="w-full px-4 py-2.5 bg-slate-50 text-slate-900 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-rose-500"
                       >
                         <option value="">Select a student...</option>
                         {studentsList.map(s => (
@@ -704,7 +721,7 @@ export default function Management() {
                         required
                         value={newIncident.type}
                         onChange={e => setNewIncident({...newIncident, type: e.target.value})}
-                        className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-rose-500"
+                        className="w-full px-4 py-2.5 bg-slate-50 text-slate-900 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-rose-500"
                       >
                         <option value="Sick">Medical / Sick Room</option>
                         <option value="Behavior">Behavioral Issue</option>
@@ -720,7 +737,7 @@ export default function Management() {
                         placeholder="Details of the incident..."
                         value={newIncident.description}
                         onChange={e => setNewIncident({...newIncident, description: e.target.value})}
-                        className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-rose-500 resize-none"
+                        className="w-full px-4 py-2.5 bg-slate-50 text-slate-900 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-rose-500 resize-none"
                       />
                     </div>
 
@@ -737,8 +754,8 @@ export default function Management() {
 
               {/* List */}
               <div className="lg:col-span-2">
-                <div className="bg-white rounded-[24px] shadow-sm border border-slate-100 overflow-hidden">
-                  <div className="p-6 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+                <div className="bg-white text-slate-900 rounded-[24px] shadow-sm border border-slate-100 overflow-hidden">
+                  <div className="p-6 border-b border-slate-100 flex items-center justify-between bg-slate-50 text-slate-900/50">
                     <h2 className="text-lg font-bold text-slate-800">Recent Logs</h2>
                   </div>
                   
@@ -750,7 +767,7 @@ export default function Management() {
                     ) : (
                       <ul className="space-y-2">
                         {incidents.map(inc => (
-                          <li key={inc.id} className="p-4 rounded-2xl hover:bg-slate-50 transition-colors border border-transparent hover:border-slate-100 group flex flex-col sm:flex-row gap-4 justify-between">
+                          <li key={inc.id} className="p-4 rounded-2xl hover:bg-slate-50 text-slate-900 transition-colors border border-transparent hover:border-slate-100 group flex flex-col sm:flex-row gap-4 justify-between">
                             <div className="flex gap-4 items-start">
                               <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
                                 inc.incident_type === 'Sick' ? 'bg-rose-100 text-rose-600' :

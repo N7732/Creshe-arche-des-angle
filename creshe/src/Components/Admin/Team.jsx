@@ -1,9 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { Loader2, Plus, Trash2, Users, Save, Edit2 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import useSWR, { mutate } from 'swr';
+import { fetcher } from '../../utils/fetcher';
 
 export default function Team() {
-  const [team, setTeam] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { t } = useTranslation();
+  const { data, isLoading } = useSWR('http://localhost:5000/api/team', fetcher);
+  const team = Array.isArray(data) ? data : [];
+  const loading = isLoading;
+
   const [saving, setSaving] = useState(false);
   
   const [newName, setNewName] = useState('');
@@ -11,13 +17,9 @@ export default function Team() {
   const [newEmail, setNewEmail] = useState('');
   const [newPhone, setNewPhone] = useState('');
   const [newBio, setNewBio] = useState('');
-  const [imageFile, setImageFile] = useState(null);
+  const [imageUrl, setImageUrl] = useState('');
   
   const [editingId, setEditingId] = useState(null);
-
-  useEffect(() => {
-    fetchTeam();
-  }, []);
 
   const getAuthToken = () => {
     try {
@@ -27,48 +29,37 @@ export default function Team() {
         return session.token;
       }
     } catch(e) {}
-    return '';
-  };
-
-  const fetchTeam = async () => {
-    setLoading(true);
-    try {
-      const res = await fetch('https://backend-creshe.onrender.com/api/team');
-      const data = await res.json();
-      setTeam(data || []);
-    } catch (error) {
-      console.error('Error fetching team:', error);
-    } finally {
-      setLoading(false);
-    }
+    return localStorage.getItem('authToken') || '';
   };
 
   const handleAdd = async (e) => {
     e.preventDefault();
-    if (!newName || !newRole || (!imageFile && !editingId)) {
-      alert('Please fill Name, Role, and select an image.');
+    if (!newName || !newRole || (!imageUrl && !editingId)) {
+      alert('Please fill Name, Role, and paste a Google Drive Image Link.');
       return;
     }
     
     setSaving(true);
     try {
-      const formData = new FormData();
-      formData.append('image', imageFile);
-      formData.append('name', newName);
-      formData.append('role', newRole);
-      formData.append('email', newEmail);
-      formData.append('phone', newPhone);
-      formData.append('bio', newBio);
+      const payload = {
+        name: newName,
+        role: newRole,
+        email: newEmail,
+        phone: newPhone,
+        bio: newBio,
+        image_url: imageUrl
+      };
 
-      const url = editingId ? `https://backend-creshe.onrender.com/api/team/${editingId}` : 'https://backend-creshe.onrender.com/api/team';
+      const url = editingId ? `http://localhost:5000/api/team/${editingId}` : 'http://localhost:5000/api/team';
       const method = editingId ? 'PUT' : 'POST';
 
       const res = await fetch(url, {
         method: method,
         headers: {
-          'Authorization': `Bearer ${getAuthToken()}`
+          'Authorization': `Bearer ${getAuthToken()}`,
+          'Content-Type': 'application/json'
         },
-        body: formData
+        body: JSON.stringify(payload)
       });
       
       if (!res.ok) {
@@ -81,11 +72,10 @@ export default function Team() {
       setNewEmail('');
       setNewPhone('');
       setNewBio('');
-      setImageFile(null);
+      setImageUrl('');
       setEditingId(null);
-      document.getElementById('team-image').value = '';
       
-      fetchTeam();
+      mutate('http://localhost:5000/api/team');
     } catch (error) {
       console.error('Save error:', error);
       alert(editingId ? `Failed to update team member. ${error.message}` : `Failed to add team member. ${error.message}`);
@@ -97,14 +87,14 @@ export default function Team() {
   const handleDelete = async (id) => {
     if (!window.confirm('Are you sure you want to delete this team member?')) return;
     try {
-      const res = await fetch(`https://backend-creshe.onrender.com/api/team/${id}`, { 
+      const res = await fetch(`http://localhost:5000/api/team/${id}`, { 
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${getAuthToken()}`
         }
       });
       if (!res.ok) throw new Error('Failed to delete');
-      setTeam(team.filter(t => t.id !== id));
+      mutate('http://localhost:5000/api/team');
     } catch (error) {
       console.error('Error deleting:', error);
       alert('Failed to delete team member.');
@@ -114,72 +104,73 @@ export default function Team() {
   return (
     <div className="p-8 max-w-7xl mx-auto space-y-8">
       <header>
-        <h1 className="text-3xl font-extrabold text-slate-800 ">Public Team Profiles</h1>
-        <p className="text-slate-500  mt-2 text-sm">Add and manage staff members that will be publicly visible on the About Us page.</p>
+        <h1 className="text-3xl font-extrabold text-slate-100 ">{t('admin.team.title')}</h1>
+        <p className="text-slate-300  mt-2 text-sm">{t('admin.team.sub')}</p>
       </header>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         
         {/* Add Form */}
         <div className="lg:col-span-1">
-          <div className="bg-white  backdrop-blur-xl p-6 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 ">
+          <div className="bg-white text-slate-900  backdrop-blur-xl p-6 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 ">
             <h2 className="text-lg font-bold text-slate-800  mb-6 flex items-center gap-2">
-              <Plus className="w-5 h-5 text-indigo-600" /> {editingId ? 'Edit Team Member' : 'Add Team Member'}
+              <Plus className="w-5 h-5 text-indigo-600" /> {editingId ? t('admin.team.edit_member') : t('admin.team.add')}
             </h2>
             <form onSubmit={handleAdd} className="space-y-4">
               <div>
-                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1">Full Name</label>
+                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1">{t('admin.team.name')}</label>
                 <input 
                   type="text" required value={newName} onChange={(e) => setNewName(e.target.value)}
-                  className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-indigo-600 focus:border-indigo-600 transition-all"
+                  className="w-full px-4 py-2 bg-slate-50 text-slate-900 border border-slate-200 rounded-xl text-sm focus:ring-indigo-600 focus:border-indigo-600 transition-all"
                   placeholder="e.g. Sarah Jenkins"
                 />
               </div>
               <div>
-                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1">Role / Position</label>
+                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1">{t('admin.team.role')}</label>
                 <input 
                   type="text" required value={newRole} onChange={(e) => setNewRole(e.target.value)}
-                  className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-indigo-600 focus:border-indigo-600 transition-all"
+                  className="w-full px-4 py-2 bg-slate-50 text-slate-900 border border-slate-200 rounded-xl text-sm focus:ring-indigo-600 focus:border-indigo-600 transition-all"
                   placeholder="e.g. Head Teacher"
                 />
               </div>
               <div>
-                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1">Email</label>
+                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1">{t('admin.team.email')}</label>
                 <input 
                   type="email" required value={newEmail} onChange={(e) => setNewEmail(e.target.value)}
-                  className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-indigo-600 focus:border-indigo-600 transition-all"
+                  className="w-full px-4 py-2 bg-slate-50 text-slate-900 border border-slate-200 rounded-xl text-sm focus:ring-indigo-600 focus:border-indigo-600 transition-all"
                   placeholder="e.g. staff@nursery.com"
                 />
               </div>
               <div>
-                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1">Contact (Phone)</label>
+                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1">{t('admin.team.phone')}</label>
                 <input 
                   type="text" required value={newPhone} onChange={(e) => setNewPhone(e.target.value)}
-                  className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-indigo-600 focus:border-indigo-600 transition-all"
+                  className="w-full px-4 py-2 bg-slate-50 text-slate-900 border border-slate-200 rounded-xl text-sm focus:ring-indigo-600 focus:border-indigo-600 transition-all"
                   placeholder="e.g. +123456789"
                 />
               </div>
               <div>
-                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1">Photo {editingId && '(Optional if keeping current)'}</label>
+                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1">{t('admin.team.photo')} {editingId && t('admin.team.photo_opt')}</label>
                 <input 
-                  type="file" id="team-image" accept="image/*" onChange={(e) => setImageFile(e.target.files[0])}
+                  type="url" value={imageUrl} onChange={(e) => setImageUrl(e.target.value)}
                   required={!editingId}
-                  className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-indigo-600 focus:border-indigo-600 transition-all file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-bold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
+                  placeholder="https://drive.google.com/file/d/.../view"
+                  className="w-full px-4 py-2 bg-slate-50 text-slate-900 border border-slate-200 rounded-xl text-sm focus:ring-indigo-600 focus:border-indigo-600 transition-all"
                 />
               </div>
               <div>
-                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1">Short Bio</label>
+                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1">{t('admin.team.bio')}</label>
                 <textarea 
                   value={newBio} onChange={(e) => setNewBio(e.target.value)} rows="3"
-                  className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-indigo-600 focus:border-indigo-600 transition-all resize-none"
+                  className="w-full px-4 py-2 bg-slate-50 text-slate-900 border border-slate-200 rounded-xl text-sm focus:ring-indigo-600 focus:border-indigo-600 transition-all resize-none"
                   placeholder="Brief description of their experience..."
                 />
               </div>
               <button 
                 type="submit" disabled={saving}
-                className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-xl flex items-center justify-center gap-2 transition-colors shadow-lg shadow-indigo-600/20"
+                className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-xl flex items-center justify-center gap-2 transition-colors mt-4 shadow-lg shadow-indigo-600/20"
               >
-                {saving ? <Loader2 className="w-5 h-5 animate-spin" /> : <><Save className="w-5 h-5" /> {editingId ? 'Update Profile' : 'Save Profile'}</>}
+                {saving ? <Loader2 className="w-5 h-5 animate-spin" /> : <><Save className="w-5 h-5" /> {t('admin.team.save_btn')}</>}
               </button>
               {editingId && (
                 <button 
@@ -191,8 +182,7 @@ export default function Team() {
                     setNewEmail('');
                     setNewPhone('');
                     setNewBio('');
-                    setImageFile(null);
-                    document.getElementById('team-image').value = '';
+                    setImageUrl('');
                   }}
                   className="w-full bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold py-3 px-4 rounded-xl flex items-center justify-center gap-2 transition-colors mt-2"
                 >
@@ -205,10 +195,10 @@ export default function Team() {
 
         {/* Team List */}
         <div className="lg:col-span-2">
-          <div className="bg-white backdrop-blur-xl rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 overflow-hidden min-h-[400px]">
+          <div className="bg-white text-slate-900 backdrop-blur-xl rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 overflow-hidden min-h-[400px]">
             <div className="p-6 border-b border-slate-100">
               <h2 className="font-bold text-slate-800 flex items-center gap-2">
-                <Users className="w-5 h-5 text-indigo-600" /> Current Public Team
+                <Users className="w-5 h-5 text-indigo-600" /> {t('admin.team.current')}
               </h2>
             </div>
             
@@ -217,19 +207,17 @@ export default function Team() {
                 <Loader2 className="w-8 h-8 animate-spin text-indigo-600" />
               </div>
             ) : team.length === 0 ? (
-              <div className="flex flex-col items-center justify-center p-16 text-center">
-                <div className="w-20 h-20 bg-indigo-50 rounded-full flex items-center justify-center mb-6 shadow-inner">
-                  <Users className="w-10 h-10 text-indigo-300" />
+              <div className="p-16 flex flex-col items-center justify-center text-slate-500 text-center">
+                <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mb-4">
+                  <Users className="w-10 h-10 text-slate-300" />
                 </div>
-                <h3 className="text-2xl font-bold text-slate-800 mb-2">No Profiles Found</h3>
-                <p className="text-slate-500 max-w-md mb-8">
-                  You haven't added any public staff members yet. Add them to show up on the About Us page!
-                </p>
+                <h3 className="text-xl font-bold text-slate-700 mb-2">{t('admin.team.empty')}</h3>
+                <p className="text-sm max-w-sm">{t('admin.team.empty_sub')}</p>
               </div>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 p-6">
                 {team.map((member) => (
-                  <div key={member.id} className="bg-slate-50 rounded-xl overflow-hidden border border-slate-200 group relative flex flex-col">
+                  <div key={member.id} className="bg-slate-50 text-slate-900 rounded-xl overflow-hidden border border-slate-200 group relative flex flex-col">
                     <div className="h-64 overflow-hidden relative">
                       {member.image_url ? (
                         <img src={member.image_url} alt={member.name} className="w-full h-full object-cover object-top group-hover:scale-105 transition-transform" />

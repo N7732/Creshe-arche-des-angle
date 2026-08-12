@@ -6,6 +6,7 @@ const rateLimit = require('express-rate-limit');
 
 // Route imports
 const authRoutes = require('./routes/auth.routes');
+const parentAuthRoutes = require('./routes/parentAuth.routes');
 const enrollmentRoutes = require('./routes/enrollment.routes');
 const contactRoutes = require('./routes/contact.routes');
 const galleryRoutes = require('./routes/gallery.routes');
@@ -13,6 +14,8 @@ const facilityRoutes = require('./routes/facility.routes');
 const settingsRoutes = require('./routes/settings.routes');
 const teamRoutes = require('./routes/team.routes');
 const managementRoutes = require('./routes/management.routes');
+const testimoniesRoutes = require('./routes/testimonies.routes');
+const guardiansRoutes = require('./routes/guardians.routes');
 const path = require('path');
 const db = require('./db/database');
 
@@ -41,6 +44,7 @@ app.use(express.json());
 
 // Routes
 app.use('/api/auth', authRoutes);
+app.use('/api/parents', parentAuthRoutes);
 app.use('/api/enrollments', enrollmentRoutes);
 app.use('/api/contact', contactRoutes);
 app.use('/api/galleries', galleryRoutes);
@@ -48,6 +52,8 @@ app.use('/api/facilities', facilityRoutes);
 app.use('/api/settings', settingsRoutes);
 app.use('/api/team', teamRoutes);
 app.use('/api/management', managementRoutes);
+app.use('/api/testimonies', testimoniesRoutes);
+app.use('/api/guardians', guardiansRoutes);
 
 // Serve static files from uploads directory
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
@@ -58,15 +64,15 @@ app.get('/api/health', (req, res) => {
 });
 
 // Automated Cleanup Tasks
-const cleanupContacts = () => {
+const cleanupContacts = async () => {
   try {
-    const setting = db.prepare("SELECT value FROM settings WHERE key = 'contact_retention_days'").get();
-    const retentionDays = setting ? parseInt(setting.value, 10) : 30;
+    const settingResult = await db.query("SELECT value FROM settings WHERE key = 'contact_retention_days'");
+    const retentionDays = settingResult.rows.length > 0 ? parseInt(settingResult.rows[0].value, 10) : 30;
     
     if (retentionDays > 0) {
-      const info = db.prepare(`DELETE FROM contacts WHERE createdAt <= datetime('now', ?)`).run(`-${retentionDays} days`);
-      if (info.changes > 0) {
-        console.log(`Cleaned up ${info.changes} old contact message(s).`);
+      const result = await db.query(`DELETE FROM contacts WHERE createdAt <= NOW() - interval '${retentionDays} days'`);
+      if (result.rowCount > 0) {
+        console.log(`Cleaned up ${result.rowCount} old contact message(s).`);
       }
     }
   } catch (error) {

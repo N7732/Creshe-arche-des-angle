@@ -85,3 +85,12 @@
 ::-webkit-scrollbar-thumb:hover {
   background: #357ABD;
 }
+
+/* Hide scrollbar for horizontal scrolling containers */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}

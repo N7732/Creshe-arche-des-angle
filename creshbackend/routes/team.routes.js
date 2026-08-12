@@ -1,33 +1,17 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../db/database');
-const multer = require('multer');
-const path = require('path');
-const fs = require('fs');
-
-const uploadDir = path.join(__dirname, '..', 'uploads');
-if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir);
-}
-
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, uploadDir);
-  },
-  filename: function (req, file, cb) {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
-  }
-});
-
-const upload = multer({ storage: storage });
+const { parseDriveLink } = require('../utils/drive');
 
 // Public route to get team profiles
-router.get('/', (req, res) => {
+router.get('/', async (req, res) => {
   try {
-    const stmt = db.prepare('SELECT * FROM team_profiles ORDER BY created_at ASC');
-    const rows = stmt.all();
-    res.json(rows);
+    const result = await db.query('SELECT * FROM team_profiles ORDER BY created_at ASC');
+    const mapped = result.rows.map(row => ({
+      ...row,
+      image_url: parseDriveLink(row.image_url)
+    }));
+    res.json(mapped);
   } catch (error) {
     console.error('Fetch team error:', error);
     res.status(500).json({ error: 'Failed to fetch team profiles' });
@@ -35,18 +19,22 @@ router.get('/', (req, res) => {
 });
 
 // Admin route to create a team profile
-router.post('/', upload.single('image'), (req, res) => {
-  const { name, role, bio, email, phone } = req.body;
-  if (!req.file) {
-    return res.status(400).json({ error: 'No image uploaded' });
+router.post('/', async (req, res) => {
+  const { name, role, bio, email, phone, image_url } = req.body;
+  if (!image_url) {
+    return res.status(400).json({ error: 'No image URL provided' });
   }
   
-  const image_url = `http://localhost:5000/uploads/${req.file.filename}`;
-
   try {
-    const stmt = db.prepare('INSERT INTO team_profiles (name, role, bio, email, phone, image_url) VALUES (?, ?, ?, ?, ?, ?)');
-    const info = stmt.run(name, role, bio || '', email || '', phone || '', image_url);
-    res.status(201).json({ id: info.lastInsertRowid, name, role, bio, email, phone, image_url });
+    const result = await db.query(
+      'INSERT INTO team_profiles (name, role, bio, email, phone, image_url) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id',
+      [name, role, bio || '', email || '', phone || '', image_url]
+    );
+    res.status(201).json({ 
+      id: result.rows[0].id, 
+      name, role, bio, email, phone, 
+      image_url: parseDriveLink(image_url) 
+    });
   } catch (error) {
     console.error('Create team error:', error);
     res.status(500).json({ error: 'Failed to save team profile' });
@@ -54,12 +42,10 @@ router.post('/', upload.single('image'), (req, res) => {
 });
 
 // Admin route to delete a team profile
-// Admin route to delete a team profile
-router.delete('/:id', (req, res) => {
+router.delete('/:id', async (req, res) => {
   try {
-    const stmt = db.prepare('DELETE FROM team_profiles WHERE id = ?');
-    const info = stmt.run(req.params.id);
-    if (info.changes === 0) {
+    const result = await db.query('DELETE FROM team_profiles WHERE id = $1', [req.params.id]);
+    if (result.rowCount === 0) {
       return res.status(404).json({ error: 'Profile not found' });
     }
     res.status(200).json({ message: 'Deleted successfully' });
@@ -70,23 +56,27 @@ router.delete('/:id', (req, res) => {
 });
 
 // Admin route to update a team profile
-router.put('/:id', upload.single('image'), (req, res) => {
-  const { name, role, bio, email, phone } = req.body;
+router.put('/:id', async (req, res) => {
+  const { name, role, bio, email, phone, image_url } = req.body;
   const id = req.params.id;
   
   try {
-    if (req.file) {
-      const image_url = `http://localhost:5000/uploads/${req.file.filename}`;
-      const stmt = db.prepare('UPDATE team_profiles SET name = ?, role = ?, bio = ?, email = ?, phone = ?, image_url = ? WHERE id = ?');
-      stmt.run(name, role, bio || '', email || '', phone || '', image_url, id);
-      res.status(200).json({ id, name, role, bio, email, phone, image_url });
+    if (image_url) {
+      await db.query(
+        'UPDATE team_profiles SET name = $1, role = $2, bio = $3, email = $4, phone = $5, image_url = $6 WHERE id = $7',
+        [name, role, bio || '', email || '', phone || '', image_url, id]
+      );
+      res.status(200).json({ id, name, role, bio, email, phone, image_url: parseDriveLink(image_url) });
     } else {
-      const stmt = db.prepare('UPDATE team_profiles SET name = ?, role = ?, bio = ?, email = ?, phone = ? WHERE id = ?');
-      stmt.run(name, role, bio || '', email || '', phone || '', id);
-      // We don't have the original image_url easily here unless we query it, but we can just return what changed.
-      // Wait, let's query the image_url to return the complete object.
-      const current = db.prepare('SELECT image_url FROM team_profiles WHERE id = ?').get(id);
-      res.status(200).json({ id, name, role, bio, email, phone, image_url: current ? current.image_url : null });
+      await db.query(
+        'UPDATE team_profiles SET name = $1, role = $2, bio = $3, email = $4, phone = $5 WHERE id = $6',
+        [name, role, bio || '', email || '', phone || '', id]
+      );
+      const current = await db.query('SELECT image_url FROM team_profiles WHERE id = $1', [id]);
+      res.status(200).json({ 
+        id, name, role, bio, email, phone, 
+        image_url: current.rows.length > 0 ? parseDriveLink(current.rows[0].image_url) : null 
+      });
     }
   } catch (error) {
     console.error('Update team error:', error);

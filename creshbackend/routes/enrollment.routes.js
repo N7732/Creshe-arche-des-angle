@@ -31,15 +31,15 @@ const statusUpdateSchema = z.object({
 });
 
 // Helper function to check enrollment status
-const getEnrollmentStatus = () => {
-  const enabledSetting = db.prepare("SELECT value FROM settings WHERE key = 'enrollment_enabled'").get();
-  const capacitySetting = db.prepare("SELECT value FROM settings WHERE key = 'enrollment_capacity'").get();
+const getEnrollmentStatus = async () => {
+  const enabledSetting = await db.query("SELECT value FROM settings WHERE key = 'enrollment_enabled'");
+  const capacitySetting = await db.query("SELECT value FROM settings WHERE key = 'enrollment_capacity'");
   
-  const isEnabled = enabledSetting ? enabledSetting.value === 'true' : true; // Default true
-  const capacity = capacitySetting ? parseInt(capacitySetting.value, 10) : 50; // Default 50
+  const isEnabled = enabledSetting.rows.length > 0 ? enabledSetting.rows[0].value === 'true' : true; // Default true
+  const capacity = capacitySetting.rows.length > 0 ? parseInt(capacitySetting.rows[0].value, 10) : 50; // Default 50
 
-  const countRow = db.prepare("SELECT count(*) as count FROM enrollments").get();
-  const currentCount = countRow ? countRow.count : 0;
+  const countRow = await db.query("SELECT count(*) as count FROM enrollments");
+  const currentCount = countRow.rows.length > 0 ? parseInt(countRow.rows[0].count, 10) : 0;
 
   let isOpen = true;
   let reason = null;
@@ -56,9 +56,9 @@ const getEnrollmentStatus = () => {
 };
 
 // Check if enrollments are open (Public)
-router.get('/status', (req, res) => {
+router.get('/status', async (req, res) => {
   try {
-    const status = getEnrollmentStatus();
+    const status = await getEnrollmentStatus();
     res.json(status);
   } catch (error) {
     console.error('Enrollment status error:', error);
@@ -67,10 +67,10 @@ router.get('/status', (req, res) => {
 });
 
 // Create new enrollment (Public)
-router.post('/', validateRequest(enrollmentSchema), (req, res) => {
+router.post('/', validateRequest(enrollmentSchema), async (req, res) => {
   const data = req.body;
   try {
-    const enrollStatus = getEnrollmentStatus();
+    const enrollStatus = await getEnrollmentStatus();
     if (!enrollStatus.isOpen) {
       const msg = enrollStatus.reason === 'capacity' 
         ? 'Nursery capacity has been reached. We are not accepting new enrollments.' 
@@ -78,26 +78,27 @@ router.post('/', validateRequest(enrollmentSchema), (req, res) => {
       return res.status(403).json({ error: msg });
     }
 
-    const existing = db.prepare('SELECT id FROM enrollments WHERE LOWER(parentEmail) = LOWER(?) AND parentPhone = ? AND LOWER(childName) = LOWER(?)').get(data.parentEmail, data.parentPhone, data.childName);
-    if (existing) {
+    const existing = await db.query(
+      'SELECT id FROM enrollments WHERE LOWER(parentEmail) = LOWER($1) AND parentPhone = $2 AND LOWER(childName) = LOWER($3)',
+      [data.parentEmail, data.parentPhone, data.childName]
+    );
+    if (existing.rows.length > 0) {
       return res.status(409).json({ error: 'Your child exists in our database. Please contact the administration.' });
     }
 
-    const stmt = db.prepare(`
+    await db.query(`
       INSERT INTO enrollments (
         id, childName, childDob, ageGroup, requestedStartDate, scheduleDays,
         preferredClass, parentName, parentEmail, parentPhone, status,
         specialNeeds, additionalNotes, submissionDate, currentProgressCode
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `);
-
-    stmt.run(
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
+    `, [
       data.id, data.childName, data.childDob, data.ageGroup, data.requestedStartDate,
       JSON.stringify(data.scheduleDays), data.preferredClass || '', data.parentName,
       data.parentEmail, data.parentPhone, data.status || 'Submitted',
       data.specialNeeds || '', data.additionalNotes || '', data.submissionDate,
       data.currentProgressCode || 0
-    );
+    ]);
 
     res.status(201).json({ message: 'Enrollment successfully submitted', id: data.id });
   } catch (error) {
@@ -107,13 +108,13 @@ router.post('/', validateRequest(enrollmentSchema), (req, res) => {
 });
 
 // Get all enrollments (Protected)
-router.get('/', authenticateAdmin, (req, res) => {
+router.get('/', authenticateAdmin, async (req, res) => {
   try {
-    const enrollments = db.prepare('SELECT * FROM enrollments ORDER BY submissionDate DESC').all();
+    const result = await db.query('SELECT * FROM enrollments ORDER BY submissionDate DESC');
     // Parse the JSON string back to array
-    const mapped = enrollments.map(e => ({
+    const mapped = result.rows.map(e => ({
       ...e,
-      scheduleDays: JSON.parse(e.scheduleDays)
+      scheduleDays: typeof e.scheduleDays === 'string' ? JSON.parse(e.scheduleDays) : e.scheduleDays
     }));
     res.json(mapped);
   } catch (error) {
@@ -123,20 +124,20 @@ router.get('/', authenticateAdmin, (req, res) => {
 });
 
 // Update enrollment status (Protected)
-router.put('/:id/status', authenticateAdmin, validateRequest(statusUpdateSchema), (req, res) => {
+router.put('/:id/status', authenticateAdmin, validateRequest(statusUpdateSchema), async (req, res) => {
   const { id } = req.params;
   const { status, currentProgressCode } = req.body;
   
   try {
     if (status === 'Rejected') {
-      const info = db.prepare('DELETE FROM enrollments WHERE id = ?').run(id);
-      if (info.changes === 0) {
+      const result = await db.query('DELETE FROM enrollments WHERE id = $1', [id]);
+      if (result.rowCount === 0) {
         return res.status(404).json({ error: 'Enrollment not found' });
       }
       res.json({ message: 'Enrollment rejected and deleted successfully' });
     } else {
-      const info = db.prepare('UPDATE enrollments SET status = ?, currentProgressCode = ? WHERE id = ?').run(status, currentProgressCode, id);
-      if (info.changes === 0) {
+      const result = await db.query('UPDATE enrollments SET status = $1, currentProgressCode = $2 WHERE id = $3', [status, currentProgressCode, id]);
+      if (result.rowCount === 0) {
         return res.status(404).json({ error: 'Enrollment not found' });
       }
       res.json({ message: 'Enrollment updated successfully' });

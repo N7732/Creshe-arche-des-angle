@@ -1,38 +1,24 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { X, ZoomIn, Loader2 } from 'lucide-react';
-import { supabase } from '../supabaseClient';
+import { useTranslation } from 'react-i18next';
+import useSWR from 'swr';
+import { fetcher } from '../utils/fetcher';
 
 const categories = ['All', 'Playing', 'Learning', 'Sports', 'Art', 'Events', 'Classrooms', 'General'];
 
 export default function Gallery({ initialCategory = 'All' }) {
+  const { t } = useTranslation();
   const [activeCategory, setActiveCategory] = useState(initialCategory);
   const [selectedImage, setSelectedImage] = useState(null);
-  const [galleries, setGalleries] = useState([]);
-  const [loading, setLoading] = useState(true);
+
+  const { data, isLoading } = useSWR('http://localhost:5000/api/galleries', fetcher);
+  const galleries = Array.isArray(data) ? data : [];
+  const loading = isLoading;
 
   useEffect(() => {
     setActiveCategory(initialCategory);
   }, [initialCategory]);
-
-  useEffect(() => {
-    fetchGalleries();
-  }, []);
-
-  const fetchGalleries = async () => {
-    setLoading(true);
-    try {
-      const res = await fetch('https://backend-creshe.onrender.com/api/galleries');
-      if (res.ok) {
-        const data = await res.json();
-        setGalleries(Array.isArray(data) ? data : []);
-      }
-    } catch (error) {
-      console.error('Error fetching galleries:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const filteredImages = activeCategory === 'All' 
     ? galleries 
@@ -43,10 +29,10 @@ export default function Gallery({ initialCategory = 'All' }) {
       
       {/* Header */}
       <section className="text-center space-y-4 max-w-3xl mx-auto px-4 mb-12">
-        <span className="text-sm font-extrabold text-primary uppercase tracking-widest bg-blue-100 dark:bg-blue-900/30 px-4 py-1 rounded-full">Our Memories</span>
-        <h1 className="text-3xl md:text-5xl font-extrabold text-slate-800 dark:text-white">Life at Arche des Anges de Bugesera</h1>
+        <span className="text-sm font-extrabold text-primary uppercase tracking-widest bg-blue-100 dark:bg-blue-900/30 px-4 py-1 rounded-full">{t('gallery.badge')}</span>
+        <h1 className="text-3xl md:text-5xl font-extrabold text-slate-800 dark:text-white">{t('gallery.title')}</h1>
         <p className="text-slate-600 dark:text-slate-400 text-lg leading-relaxed">
-          A glimpse into the joyous, active, and creative moments our children experience every day.
+          {t('gallery.sub')}
         </p>
       </section>
 
@@ -62,7 +48,7 @@ export default function Gallery({ initialCategory = 'All' }) {
                 : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:border-primary dark:hover:border-primary hover:text-primary'
             }`}
           >
-            {cat}
+            {t(`gallery.cats.${cat}`, cat)}
           </button>
         ))}
       </div>
@@ -75,10 +61,10 @@ export default function Gallery({ initialCategory = 'All' }) {
           </div>
         ) : filteredImages.length === 0 ? (
           <div className="text-center text-slate-500 py-12">
-            No images found in this category.
+            {t('gallery.empty')}
           </div>
         ) : (
-          <motion.div layout className="columns-1 sm:columns-2 lg:columns-3 gap-6 space-y-6">
+          <motion.div layout className="flex overflow-x-auto snap-x snap-mandatory no-scrollbar sm:block sm:columns-2 lg:columns-3 gap-6 sm:space-y-6 pb-8 sm:pb-0">
             <AnimatePresence>
               {filteredImages.map((img) => (
                 <motion.div
@@ -88,7 +74,7 @@ export default function Gallery({ initialCategory = 'All' }) {
                   exit={{ opacity: 0, scale: 0.8 }}
                   transition={{ duration: 0.4 }}
                   key={img.id}
-                  className="relative group overflow-hidden rounded-2xl shadow-md cursor-pointer break-inside-avoid bg-slate-200 dark:bg-slate-900"
+                  className="shrink-0 w-[85vw] sm:w-auto snap-center relative group overflow-hidden rounded-2xl shadow-md cursor-pointer break-inside-avoid bg-slate-200 dark:bg-slate-900"
                   onClick={() => setSelectedImage(img)}
                 >
                   <img 
@@ -101,7 +87,7 @@ export default function Gallery({ initialCategory = 'All' }) {
                   <div className="absolute inset-0 bg-blue-900/70 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col items-center justify-center text-white backdrop-blur-sm">
                     <ZoomIn className="w-10 h-10 mb-2 transform scale-50 group-hover:scale-100 transition-transform duration-300" />
                     <h3 className="font-extrabold text-lg tracking-wide transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300 px-4 text-center">{img.title}</h3>
-                    <span className="text-sm font-medium text-white/80 transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300 delay-75">{img.category}</span>
+                    <span className="text-sm font-medium text-white/80 transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300 delay-75">{t(`gallery.cats.${img.category}`, img.category)}</span>
                   </div>
                 </motion.div>
               ))}
@@ -142,7 +128,7 @@ export default function Gallery({ initialCategory = 'All' }) {
               />
               <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-black/80 to-transparent rounded-b-lg text-center">
                 <h3 className="text-white font-bold text-2xl drop-shadow-md">{selectedImage.title}</h3>
-                <span className="text-blue-300 text-sm font-medium uppercase tracking-widest">{selectedImage.category}</span>
+                <span className="text-blue-300 text-sm font-medium uppercase tracking-widest">{t(`gallery.cats.${selectedImage.category}`, selectedImage.category)}</span>
               </div>
             </motion.div>
           </motion.div>

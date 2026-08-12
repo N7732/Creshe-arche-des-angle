@@ -1,38 +1,29 @@
 import React, { useState, useEffect } from 'react';
-import { supabase } from '../../supabaseClient';
 import { Loader2, Save, UploadCloud, Video, Settings2, Trash2 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import useSWR, { mutate } from 'swr';
+import { fetcher } from '../../utils/fetcher';
 
 export default function WebSettings() {
+  const { t } = useTranslation();
   const [settings, setSettings] = useState({});
-  const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
 
-  useEffect(() => {
-    fetchSettings();
-  }, []);
+  const { data, isLoading } = useSWR('http://localhost:5000/api/settings', fetcher);
+  const loading = isLoading;
 
-  const fetchSettings = async () => {
-    setLoading(true);
-    try {
-      const res = await fetch('https://backend-creshe.onrender.com/api/settings');
-      const data = await res.json();
-      
+  useEffect(() => {
+    if (data) {
       const settingsMap = {};
-      if (data) {
-        data.forEach(item => {
-          settingsMap[item.key] = item.value;
-        });
-      }
+      data.forEach(item => {
+        settingsMap[item.key] = item.value;
+      });
       setSettings(settingsMap);
-    } catch (error) {
-      console.error('Error fetching settings:', error);
-    } finally {
-      setLoading(false);
     }
-  };
+  }, [data]);
 
   const handleSettingChange = (key, value) => {
     setSettings(prev => ({ ...prev, [key]: value }));
@@ -42,12 +33,13 @@ export default function WebSettings() {
     setSaving(true);
     try {
       for (const [key, value] of Object.entries(settings)) {
-        await fetch('https://backend-creshe.onrender.com/api/settings', {
+        await fetch('http://localhost:5000/api/settings', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ key, value })
         });
       }
+      mutate('http://localhost:5000/api/settings');
       alert('Settings saved successfully!');
     } catch (error) {
       console.error('Error saving settings:', error);
@@ -100,53 +92,57 @@ export default function WebSettings() {
       
       <div className="flex justify-between items-end">
         <div>
-          <h1 className="text-2xl font-extrabold text-slate-800 ">Web Settings & Media</h1>
-          <p className="text-slate-500  text-sm">Manage global website configuration and home page videos.</p>
+          <h1 className="text-2xl font-extrabold text-slate-100 ">{t('admin.settings.title')}</h1>
+          <p className="text-slate-300  text-sm">{t('admin.settings.sub')}</p>
         </div>
         <button 
           onClick={saveSettings}
           disabled={saving}
           className="bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-2 px-6 rounded-lg flex items-center gap-2 transition-colors"
         >
-          {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-          Save Changes
+          {saving ? <Loader2 className="w-5 h-5 animate-spin" /> : <Save className="w-5 h-5" />}
+          {t('admin.settings.save')}
         </button>
       </div>
 
-      <div className="bg-white  backdrop-blur-xl p-6 md:p-8 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] [0_8px_30px_rgb(0,0,0,0.2)] border border-slate-100  space-y-8">
+      <div className="bg-white text-slate-900  rounded-2xl shadow-sm border border-slate-100 p-8 space-y-10">
         
-        {/* Home Video Management */}
-        <div className="space-y-4">
-          <h2 className="text-lg font-bold text-slate-800  flex items-center gap-2 border-b border-slate-100  pb-2">
-            <Video className="w-5 h-5 text-secondary" /> Home Page Video
+        {/* VIDEO SECTION */}
+        <section>
+          <h2 className="text-lg font-bold text-slate-800  mb-6 flex items-center gap-2">
+            <Video className="w-5 h-5 text-amber-500" /> {t('admin.settings.video')}
           </h2>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-2">
-              <label className="block text-sm font-bold text-slate-700 ">Current Video URL</label>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div>
+              <label className="block text-sm font-bold text-slate-700  mb-2">{t('admin.settings.video_url')}</label>
               <input 
                 type="text" 
                 value={settings.home_video_url || ''}
                 onChange={(e) => handleSettingChange('home_video_url', e.target.value)}
-                className="w-full px-4 py-2 bg-slate-50  border border-slate-200  rounded-lg text-sm focus:ring-primary focus:border-primary "
+                className="w-full px-4 py-2 bg-slate-50 text-slate-900  border border-slate-200  rounded-lg text-sm focus:ring-primary focus:border-primary "
                 placeholder="https://..."
               />
             </div>
-            
-            <div className="space-y-2">
-              <label className="block text-sm font-bold text-slate-700 ">Upload New Video</label>
-              <div className="relative">
+            <div>
+              <label className="block text-sm font-bold text-slate-700  mb-2">{t('admin.settings.upload')}</label>
+              <div className="relative border-2 border-dashed border-slate-300  rounded-xl p-4 flex flex-col items-center justify-center bg-slate-50 text-slate-900  hover:bg-slate-100 transition-colors">
                 <input 
                   type="file" 
-                  accept="video/*"
+                  accept="video/mp4,video/webm"
                   onChange={handleVideoUpload}
-                  disabled={uploading}
                   className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                  disabled={uploading}
                 />
-                <div className={`w-full px-4 py-2 border-2 border-dashed border-slate-300  rounded-lg flex items-center justify-center gap-2 text-sm font-bold text-slate-500 transition-colors ${uploading ? 'bg-slate-50 ' : 'hover:border-primary hover:text-primary bg-white '}`}>
-                  {uploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <UploadCloud className="w-4 h-4" />}
-                  {uploading ? 'Uploading to Supabase...' : 'Click or Drag Video Here'}
-                </div>
+                {uploading ? (
+                  <div className="flex items-center gap-2 text-indigo-600 font-medium">
+                    <Loader2 className="w-5 h-5 animate-spin" /> Uploading {uploadProgress}%...
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2 text-slate-600 ">
+                    <UploadCloud className="w-5 h-5" /> <span className="text-sm font-bold">{t('admin.settings.drag')}</span>
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -156,90 +152,86 @@ export default function WebSettings() {
               <video src={settings.home_video_url} controls className="w-full h-full object-cover" />
             </div>
           )}
-        </div>
+        </section>
 
-        {/* Enrollment Configuration */}
-        <div className="space-y-4">
-          <h2 className="text-lg font-bold text-slate-800 flex items-center gap-2 border-b border-slate-100 pb-2">
-            <Settings2 className="w-5 h-5 text-indigo-500" /> Enrollment Configuration
-          </h2>
+        {/* ENROLLMENT CONFIG */}
+        <section>
+          <div className="flex items-center gap-2 mb-6 text-indigo-600">
+            <Settings2 className="w-5 h-5" />
+            <h2 className="text-lg font-bold text-slate-800 ">{t('admin.settings.enrollment')}</h2>
+          </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-2">
-              <label className="block text-sm font-bold text-slate-700">Enrollment Status</label>
-              <select
-                value={settings.enrollment_enabled || 'true'}
-                onChange={(e) => handleSettingChange('enrollment_enabled', e.target.value)}
-                className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm font-medium focus:ring-primary focus:border-primary"
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div>
+              <label className="block text-sm font-bold text-slate-700  mb-2">{t('admin.settings.status')}</label>
+              <select 
+                value={settings.enrollment_status || 'open'}
+                onChange={(e) => handleSettingChange('enrollment_status', e.target.value)}
+                className="w-full px-4 py-3 bg-slate-50 text-slate-900  border border-slate-200  rounded-lg focus:ring-2 focus:ring-indigo-500"
               >
-                <option value="true">Open (Accepting Enrollments)</option>
-                <option value="false">Closed (Manually Disabled)</option>
+                <option value="open">{t('admin.settings.open')}</option>
+                <option value="closed">Closed (Waitlist Only)</option>
+                <option value="maintenance">Under Maintenance</option>
               </select>
             </div>
-            
-            <div className="space-y-2">
-              <label className="block text-sm font-bold text-slate-700">Maximum Class Capacity</label>
+            <div>
+              <label className="block text-sm font-bold text-slate-700  mb-2">{t('admin.settings.capacity')}</label>
               <input 
-                type="number" 
-                min="1"
-                value={settings.enrollment_capacity || 50}
-                onChange={(e) => handleSettingChange('enrollment_capacity', e.target.value)}
-                className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-primary focus:border-primary"
+                type="number"
+                value={settings.max_capacity || 50}
+                onChange={(e) => handleSettingChange('max_capacity', e.target.value)}
+                className="w-full px-4 py-3 bg-slate-50 text-slate-900  border border-slate-200  rounded-lg focus:ring-2 focus:ring-indigo-500"
               />
-              <p className="text-xs text-slate-500">Form will automatically close if active requests reach this limit.</p>
+              <p className="text-xs text-slate-500  mt-2">{t('admin.settings.limit')}</p>
             </div>
           </div>
-        </div>
+        </section>
 
-        {/* Data Retention */}
-        <div className="space-y-4">
-          <h2 className="text-lg font-bold text-slate-800 flex items-center gap-2 border-b border-slate-100 pb-2">
-            <Trash2 className="w-5 h-5 text-rose-500" /> Data Retention Policies
-          </h2>
+        {/* RETENTION POLICY */}
+        <section>
+          <div className="flex items-center gap-2 mb-6 text-rose-600">
+            <Trash2 className="w-5 h-5" />
+            <h2 className="text-lg font-bold text-slate-800 ">{t('admin.settings.retention')}</h2>
+          </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-2">
-              <label className="block text-sm font-bold text-slate-700">Contact Message Retention (Days)</label>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div>
+              <label className="block text-sm font-bold text-slate-700  mb-2">{t('admin.settings.msg_retention')}</label>
               <input 
-                type="number" 
-                min="1"
+                type="number"
                 value={settings.contact_retention_days || 30}
                 onChange={(e) => handleSettingChange('contact_retention_days', e.target.value)}
-                className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-primary focus:border-primary"
+                className="w-full px-4 py-3 bg-slate-50 text-slate-900  border border-slate-200  rounded-lg focus:ring-2 focus:ring-rose-500"
               />
-              <p className="text-xs text-slate-500">Contact messages older than this will be permanently deleted automatically.</p>
+              <p className="text-xs text-slate-500  mt-2">{t('admin.settings.del_msg')}</p>
             </div>
           </div>
-        </div>
+        </section>
 
-        {/* General Settings */}
-        <div className="space-y-4">
-          <h2 className="text-lg font-bold text-slate-800  flex items-center gap-2 border-b border-slate-100  pb-2">
-            General Configuration
-          </h2>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-2">
-              <label className="block text-sm font-bold text-slate-700 ">Contact Email</label>
+        {/* CONTACT / GENERAL */}
+        <section>
+          <h2 className="text-lg font-bold text-slate-800  mb-6">{t('admin.settings.general')}</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div>
+              <label className="block text-sm font-bold text-slate-700  mb-2">{t('admin.settings.email')}</label>
               <input 
-                type="email" 
+                type="email"
                 value={settings.contact_email || ''}
                 onChange={(e) => handleSettingChange('contact_email', e.target.value)}
-                className="w-full px-4 py-2 bg-slate-50  border border-slate-200  rounded-lg text-sm focus:ring-primary focus:border-primary "
+                className="w-full px-4 py-3 bg-slate-50 text-slate-900  border border-slate-200  rounded-lg focus:ring-2 focus:ring-indigo-500"
               />
             </div>
-            
-            <div className="space-y-2">
-              <label className="block text-sm font-bold text-slate-700 ">Contact Phone</label>
+            <div>
+              <label className="block text-sm font-bold text-slate-700  mb-2">{t('admin.settings.phone')}</label>
               <input 
-                type="text" 
+                type="text"
                 value={settings.contact_phone || ''}
                 onChange={(e) => handleSettingChange('contact_phone', e.target.value)}
-                className="w-full px-4 py-2 bg-slate-50  border border-slate-200  rounded-lg text-sm focus:ring-primary focus:border-primary "
+                className="w-full px-4 py-3 bg-slate-50 text-slate-900  border border-slate-200  rounded-lg focus:ring-2 focus:ring-indigo-500"
               />
             </div>
           </div>
-        </div>
+        </section>
 
       </div>
     </div>

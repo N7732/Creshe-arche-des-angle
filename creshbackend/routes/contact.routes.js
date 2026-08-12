@@ -15,16 +15,16 @@ const contactSchema = z.object({
 });
 
 // Submit a contact message (Public)
-router.post('/', validateRequest(contactSchema), (req, res) => {
+router.post('/', validateRequest(contactSchema), async (req, res) => {
   const { parentName, email, phone, subject, message } = req.body;
   
   try {
-    const info = db.prepare(`
+    const result = await db.query(`
       INSERT INTO contacts (parentName, email, phone, subject, message)
-      VALUES (?, ?, ?, ?, ?)
-    `).run(parentName, email, phone, subject, message);
+      VALUES ($1, $2, $3, $4, $5) RETURNING id
+    `, [parentName, email, phone, subject, message]);
 
-    res.status(201).json({ message: 'Message sent successfully', id: info.lastInsertRowid });
+    res.status(201).json({ message: 'Message sent successfully', id: result.rows[0].id });
   } catch (error) {
     console.error('Contact submit error:', error);
     res.status(500).json({ error: 'Internal server error' });
@@ -32,10 +32,10 @@ router.post('/', validateRequest(contactSchema), (req, res) => {
 });
 
 // Get all contact messages (Protected)
-router.get('/', authenticateAdmin, (req, res) => {
+router.get('/', authenticateAdmin, async (req, res) => {
   try {
-    const messages = db.prepare('SELECT * FROM contacts ORDER BY createdAt DESC').all();
-    res.json(messages);
+    const result = await db.query('SELECT * FROM contacts ORDER BY createdAt DESC');
+    res.json(result.rows);
   } catch (error) {
     console.error('Fetch contacts error:', error);
     res.status(500).json({ error: 'Internal server error' });

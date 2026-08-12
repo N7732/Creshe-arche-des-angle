@@ -4,17 +4,18 @@ import {
   FileText, Baby, Clock, CheckCircle, ShieldAlert, BadgeCheck, AlertCircle, Sparkles, 
   Trash2, User, ChevronRight, Play, RefreshCw, Calendar, ClipboardCheck, Award 
 } from 'lucide-react';
-import { supabase } from '../supabaseClient';
+import { useTranslation } from 'react-i18next';
 
 export default function EnrollmentPortal() {
+  const { t } = useTranslation();
   const [enrollments, setEnrollments] = useState([]);
   
   // New Form Fields
   const [childName, setChildName] = useState('');
   const [childDob, setChildDob] = useState('');
-  const [ageGroup, setAgeGroup] = useState('baby');
+  const [ageGroup, setAgeGroup] = useState('Nursery 1');
   const [requestedStartDate, setRequestedStartDate] = useState('');
-  const [scheduleDays, setScheduleDays] = useState(['Mon', 'Tue', 'Thu', 'Fri']);
+  const [scheduleDays, setScheduleDays] = useState(['Mon', 'Tue', 'Wed', 'Thu', 'Fri']);
   const [preferredClass, setPreferredClass] = useState('Mrs. Sarah Jenkins');
   const [parentName, setParentName] = useState('');
   const [parentEmail, setParentEmail] = useState('');
@@ -28,7 +29,7 @@ export default function EnrollmentPortal() {
   const [enrollmentStatus, setEnrollmentStatus] = useState({ isOpen: true, loading: true });
 
   useEffect(() => {
-    fetch('https://backend-creshe.onrender.com/api/enrollments/status')
+    fetch('http://localhost:5000/api/enrollments/status')
       .then(res => res.json())
       .then(data => setEnrollmentStatus({ isOpen: data.isOpen, reason: data.reason, loading: false }))
       .catch(err => {
@@ -113,7 +114,7 @@ export default function EnrollmentPortal() {
         submissionDate: new Date().toLocaleDateString()
       };
 
-      const res = await fetch('https://backend-creshe.onrender.com/api/enrollments', {
+      const res = await fetch('http://localhost:5000/api/enrollments', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(dbPayload)
@@ -209,15 +210,15 @@ export default function EnrollmentPortal() {
 
   // Status mapping
   const PROGRESS_LINES = [
-    { title: "File Registered", sub: "Administrative file received by the medical secretariat." },
-    { title: "Health Validation", sub: "Pediatric PMI verification & Complex mandatory vaccines." },
-    { title: "Attendance Schedule", sub: "Verification of occupancy rates according to the requested days." },
-    { title: "Admission Committee", sub: "Final attribution validation by the director Dr. Ross." },
-    { title: "Admission Offer Issued", sub: "Formal enrollment proposal ready to sign!" }
+    { title: t('enrollment.progress.step1_title'), sub: t('enrollment.progress.step1_sub') },
+    { title: t('enrollment.progress.step2_title'), sub: t('enrollment.progress.step2_sub') },
+    { title: t('enrollment.progress.step3_title'), sub: t('enrollment.progress.step3_sub') },
+    { title: t('enrollment.progress.step4_title'), sub: t('enrollment.progress.step4_sub') },
+    { title: t('enrollment.progress.step5_title'), sub: t('enrollment.progress.step5_sub') }
   ];
 
   const DAYS_DICT = {
-    'Mon': 'Monday', 'Tue': 'Tuesday', 'Wed': 'Wednesday', 'Thu': 'Thursday', 'Fri': 'Friday'
+    'Mon': t('enrollment.days.Mon'), 'Tue': t('enrollment.days.Tue'), 'Wed': t('enrollment.days.Wed'), 'Thu': t('enrollment.days.Thu'), 'Fri': t('enrollment.days.Fri')
   };
 
   return (
@@ -225,10 +226,10 @@ export default function EnrollmentPortal() {
       
       {/* 1. Header description */}
       <section className="text-center space-y-4 max-w-3xl mx-auto px-4">
-        <span className="text-xs font-bold text-[#EC8F5E] uppercase tracking-wider">Interactive Admissions</span>
-        <h1 className="text-3xl sm:text-4xl font-extrabold text-[#2B3A4F] dark:text-white">Enrollment & Tracking Portal</h1>
+        <span className="text-xs font-bold text-[#EC8F5E] uppercase tracking-wider">{t('enrollment.header_badge')}</span>
+        <h1 className="text-3xl sm:text-4xl font-extrabold text-[#2B3A4F] dark:text-white">{t('enrollment.header_title')}</h1>
         <p className="text-black dark:text-slate-300 font-medium text-base md:text-lg leading-relaxed">
-          To reassure every family, our nursery offers a transparent tool for tracking spot attribution. Fill out the admission form to simulate or submit a file in real-time.
+          {t('enrollment.header_desc')}
         </p>
       </section>
 
@@ -242,23 +243,23 @@ export default function EnrollmentPortal() {
               <Baby className="w-5 h-5 text-[#EC8F5E]" />
             </div>
             <div>
-              <h2 className="text-lg md:text-xl font-bold text-[#2B3A4F]">New Admission Request</h2>
-              <p className="text-[11px] text-slate-400">Fill in your household's needs to assess eligibility.</p>
+              <h2 className="text-lg md:text-xl font-bold text-[#2B3A4F]">{t('enrollment.form_title')}</h2>
+              <p className="text-[11px] text-slate-400">{t('enrollment.form_desc')}</p>
             </div>
           </div>
 
           {enrollmentStatus.loading ? (
-            <div className="p-12 flex justify-center text-[#EC8F5E]">Loading...</div>
+            <div className="p-12 flex justify-center text-[#EC8F5E]">{t('enrollment.loading')}</div>
           ) : !enrollmentStatus.isOpen ? (
             <div className="py-12 text-center space-y-4">
               <div className="w-20 h-20 bg-rose-50 rounded-full flex items-center justify-center mx-auto mb-4">
                 <ShieldAlert className="w-10 h-10 text-rose-500" />
               </div>
-              <h3 className="text-2xl font-black text-[#2B3A4F]">Enrollments Closed</h3>
+              <h3 className="text-2xl font-black text-[#2B3A4F]">{t('enrollment.closed_title')}</h3>
               <p className="text-slate-500 font-medium max-w-md mx-auto">
                 {enrollmentStatus.reason === 'capacity' 
-                  ? 'We have currently reached our maximum capacity for this period. Please check back later.' 
-                  : 'Enrollments are currently paused by the administration. Please contact us for more information.'}
+                  ? t('enrollment.closed_capacity') 
+                  : t('enrollment.closed_paused')}
               </p>
             </div>
           ) : (
@@ -267,16 +268,16 @@ export default function EnrollmentPortal() {
             {/* Child section */}
             <div className="space-y-4">
               <h3 className="text-xs font-black uppercase text-[#8F80B3] tracking-widest flex items-center gap-1.5 border-b border-purple-50 pb-1">
-                <span>1. Baby's Information</span>
+                <span>{t('enrollment.section1')}</span>
               </h3>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
-                  <label className="font-bold text-slate-700">Child's Full Name *</label>
+                  <label className="font-bold text-slate-700">{t('enrollment.child_name')}</label>
                   <input 
                     type="text"
                     required
-                    placeholder="First & Last name of the little angel"
+                    placeholder={t('enrollment.child_name_placeholder')}
                     value={childName}
                     onChange={e => setChildName(e.target.value)}
                     className="w-full bg-[#FDFBF7] border border-slate-200 focus:border-[#EC8F5E] rounded-xl px-4 py-2.5 outline-hidden text-[#2B3A4F]"
@@ -284,7 +285,7 @@ export default function EnrollmentPortal() {
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="font-bold text-slate-700">Date of Birth (or expected) *</label>
+                  <label className="font-bold text-slate-700">{t('enrollment.child_dob')}</label>
                   <input 
                     type="date"
                     required
@@ -297,20 +298,21 @@ export default function EnrollmentPortal() {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
-                  <label className="font-bold text-slate-700">Evolution Group (Section)</label>
+                  <label className="font-bold text-slate-700">{t('enrollment.evo_group')}</label>
                   <select
                     value={ageGroup}
                     onChange={e => setAgeGroup(e.target.value)}
                     className="w-full bg-[#FDFBF7] border border-slate-200 focus:border-[#EC8F5E] rounded-xl px-4 py-2.5 outline-hidden text-[#2B3A4F]"
                   >
-                    <option value="baby">Babies (10 weeks to 15 months)</option>
-                    <option value="toddler">Toddlers (15 months to 24 months)</option>
-                    <option value="preschool">Preschoolers (over 2 years)</option>
+                    <option value="Nursery 1">Nursery 1</option>
+                    <option value="Nursery 2">Nursery 2</option>
+                    <option value="Nursery 3">Nursery 3</option>
+                    <option value="Pre-Primary">Pre-Primary</option>
                   </select>
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="font-bold text-slate-700">Requested Start Date</label>
+                  <label className="font-bold text-slate-700">{t('enrollment.start_date')}</label>
                   <input 
                     type="date"
                     value={requestedStartDate}
@@ -324,8 +326,8 @@ export default function EnrollmentPortal() {
             {/* Attendance schedule section */}
             <div className="space-y-3">
               <label className="font-bold text-slate-700 flex justify-between items-center text-xs md:text-sm">
-                <span>Desired Nursery Attendance (Check at least 1 day) *</span>
-                <span className="text-slate-400 font-normal text-[11px]">Consecutive days recommended</span>
+                <span>{t('enrollment.attendance')}</span>
+                <span className="text-slate-400 font-normal text-[11px]">{t('enrollment.consecutive')}</span>
               </label>
               
               <div className="grid grid-cols-5 gap-2 text-center font-bold">
@@ -354,11 +356,11 @@ export default function EnrollmentPortal() {
             {/* Parent section */}
             <div className="space-y-4">
               <h3 className="text-xs font-black uppercase text-[#8F80B3] tracking-widest flex items-center gap-1.5 border-b border-purple-50 pb-1">
-                <span>2. Contact Details</span>
+                <span>{t('enrollment.section2')}</span>
               </h3>
 
               <div className="space-y-1.5">
-                <label className="font-bold text-slate-700">Legal Guardian's Full Name *</label>
+                <label className="font-bold text-slate-700">{t('enrollment.parent_name')}</label>
                 <div className="relative">
                   <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-400">
                     <User className="w-4 h-4" />
@@ -366,7 +368,7 @@ export default function EnrollmentPortal() {
                   <input 
                     type="text" 
                     required
-                    placeholder="Madam or Sir..."
+                    placeholder={t('enrollment.parent_name_placeholder')}
                     value={parentName}
                     onChange={e => setParentName(e.target.value)}
                     className="w-full bg-[#FDFBF7] border border-slate-200 focus:border-[#EC8F5E] rounded-xl pl-10 pr-4 py-2.5 outline-hidden text-[#2B3A4F]"
@@ -376,11 +378,11 @@ export default function EnrollmentPortal() {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
-                  <label className="font-bold text-slate-700">Primary Email *</label>
+                  <label className="font-bold text-slate-700">{t('enrollment.parent_email')}</label>
                   <input 
                     type="email" 
                     required
-                    placeholder="your.email@domain.com"
+                    placeholder={t('enrollment.parent_email_placeholder')}
                     value={parentEmail}
                     onChange={e => setParentEmail(e.target.value)}
                     className="w-full bg-[#FDFBF7] border border-slate-200 focus:border-[#EC8F5E] rounded-xl px-4 py-2.5 outline-hidden text-[#2B3A4F]"
@@ -388,11 +390,11 @@ export default function EnrollmentPortal() {
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="font-bold text-slate-700">Direct Mobile Phone *</label>
+                  <label className="font-bold text-slate-700">{t('enrollment.parent_phone')}</label>
                   <input 
                     type="tel" 
                     required
-                    placeholder="e.g. 555-0123"
+                    placeholder={t('enrollment.parent_phone_placeholder')}
                     value={parentPhone}
                     onChange={e => setParentPhone(e.target.value)}
                     className="w-full bg-[#FDFBF7] border border-slate-200 focus:border-[#EC8F5E] rounded-xl px-4 py-2.5 outline-hidden text-[#2B3A4F]"
@@ -404,15 +406,15 @@ export default function EnrollmentPortal() {
             {/* Medical context options */}
             <div className="space-y-4">
               <h3 className="text-xs font-black uppercase text-[#8F80B3] tracking-widest flex items-center gap-1.5 border-b border-purple-50 pb-1">
-                <span>3. Medical & Educational Particularities (Optional)</span>
+                <span>{t('enrollment.section3')}</span>
               </h3>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
-                  <label className="font-bold text-slate-700">Allergies or Medical Priorities</label>
+                  <label className="font-bold text-slate-700">{t('enrollment.allergies')}</label>
                   <input 
                     type="text" 
-                    placeholder="e.g. Cow's Milk Protein Intolerance"
+                    placeholder={t('enrollment.allergies_placeholder')}
                     value={specialNeeds}
                     onChange={e => setSpecialNeeds(e.target.value)}
                     className="w-full bg-[#FDFBF7] border border-slate-200 focus:border-[#EC8F5E] rounded-xl px-4 py-2.5 outline-hidden text-[#2B3A4F]"
@@ -420,10 +422,10 @@ export default function EnrollmentPortal() {
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="font-bold text-slate-700">Remarks (Departure time, nap etc.)</label>
+                  <label className="font-bold text-slate-700">{t('enrollment.remarks')}</label>
                   <input 
                     type="text" 
-                    placeholder="e.g. Leave at 5 PM every Tuesday"
+                    placeholder={t('enrollment.remarks_placeholder')}
                     value={additionalNotes}
                     onChange={e => setAdditionalNotes(e.target.value)}
                     className="w-full bg-[#FDFBF7] border border-slate-200 focus:border-[#EC8F5E] rounded-xl px-4 py-2.5 outline-hidden text-[#2B3A4F]"
@@ -443,9 +445,9 @@ export default function EnrollmentPortal() {
                 >
                   <CheckCircle className="w-5 h-5 shrink-0 text-emerald-600" />
                   <div>
-                    <h4 className="font-extrabold text-[#2B3A4F] text-sm">File Registered Locally!</h4>
+                    <h4 className="font-extrabold text-[#2B3A4F] text-sm">{t('enrollment.success_title')}</h4>
                     <p className="mt-1 leading-relaxed">
-                      The request for <strong>{childName || 'your child'}</strong> has been initialized. You can now follow the progress of their file in the right panel.
+                      {t('enrollment.success_msg', { name: childName || 'your child' })}
                     </p>
                   </div>
                 </motion.div>
@@ -457,7 +459,7 @@ export default function EnrollmentPortal() {
               type="submit"
               className="w-full bg-[#EC8F5E] hover:bg-[#D37340] text-white font-bold p-4 rounded-xl shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer transform hover:-translate-y-0.1 active:scale-[0.99]"
             >
-              Submit Admission File
+              {t('enrollment.submit_btn')}
             </button>
           </form>
           )}

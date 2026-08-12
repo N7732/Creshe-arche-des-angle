@@ -26,23 +26,22 @@ const incidentSchema = z.object({
 // --- ATTENDANCE ROUTES ---
 
 // Get today's attendance for all active students
-router.get('/attendance', authenticateAdmin, (req, res) => {
+router.get('/attendance', authenticateAdmin, async (req, res) => {
   const { date } = req.query; // format YYYY-MM-DD
   if (!date) return res.status(400).json({ error: 'Date is required' });
 
   try {
-    // We want all enrolled/approved students and their attendance for the day (if any)
-    const activeStudents = db.prepare(`
-      SELECT id as enrollment_id, childName, additionalNotes, scheduleDays, parentName, parentPhone 
+    const activeStudentsResult = await db.query(`
+      SELECT id as enrollment_id, childName, additionalNotes, scheduleDays, parentName, parentPhone
       FROM enrollments 
       WHERE status IN ('Enrolled', 'Approved')
-    `).all();
+    `);
     
-    const attendanceLogs = db.prepare('SELECT * FROM daily_attendance WHERE date = ?').all(date);
+    const attendanceLogsResult = await db.query('SELECT * FROM daily_attendance WHERE date = $1', [date]);
     
     // Merge
-    const merged = activeStudents.map(student => {
-      const log = attendanceLogs.find(l => l.enrollment_id === student.enrollment_id);
+    const merged = activeStudentsResult.rows.map(student => {
+      const log = attendanceLogsResult.rows.find(l => l.enrollment_id === student.enrollment_id);
       return {
         ...student,
         attendance: log || null
@@ -57,23 +56,23 @@ router.get('/attendance', authenticateAdmin, (req, res) => {
 });
 
 // Create or Update Attendance
-router.post('/attendance', authenticateAdmin, validateRequest(attendanceSchema), (req, res) => {
+router.post('/attendance', authenticateAdmin, validateRequest(attendanceSchema), async (req, res) => {
   const { enrollment_id, date, status, arrival_time, departure_time, discrepancy_reason } = req.body;
   
   try {
-    const existing = db.prepare('SELECT id FROM daily_attendance WHERE enrollment_id = ? AND date = ?').get(enrollment_id, date);
+    const existing = await db.query('SELECT id FROM daily_attendance WHERE enrollment_id = $1 AND date = $2', [enrollment_id, date]);
     
-    if (existing) {
-      db.prepare(`
+    if (existing.rows.length > 0) {
+      await db.query(`
         UPDATE daily_attendance 
-        SET status = ?, arrival_time = ?, departure_time = ?, discrepancy_reason = ?, logged_by = ? 
-        WHERE id = ?
-      `).run(status, arrival_time || null, departure_time || null, discrepancy_reason || '', req.user.username, existing.id);
+        SET status = $1, arrival_time = $2, departure_time = $3, discrepancy_reason = $4, logged_by = $5 
+        WHERE id = $6
+      `, [status, arrival_time || null, departure_time || null, discrepancy_reason || '', req.user.username, existing.rows[0].id]);
     } else {
-      db.prepare(`
+      await db.query(`
         INSERT INTO daily_attendance (enrollment_id, date, status, arrival_time, departure_time, discrepancy_reason, logged_by)
-        VALUES (?, ?, ?, ?, ?, ?, ?)
-      `).run(enrollment_id, date, status, arrival_time || null, departure_time || null, discrepancy_reason || '', req.user.username);
+        VALUES ($1, $2, $3, $4, $5, $6, $7)
+      `, [enrollment_id, date, status, arrival_time || null, departure_time || null, discrepancy_reason || '', req.user.username]);
     }
     
     res.json({ message: 'Attendance logged successfully' });
@@ -84,7 +83,7 @@ router.post('/attendance', authenticateAdmin, validateRequest(attendanceSchema),
 });
 
 // Get Attendance Analytics
-router.get('/attendance/stats', authenticateAdmin, (req, res) => {
+router.get('/attendance/stats', authenticateAdmin, async (req, res) => {
   const { period } = req.query; // 'week', 'semester', 'year'
   
   let daysBack = 7;
@@ -99,17 +98,17 @@ router.get('/attendance/stats', authenticateAdmin, (req, res) => {
   const endStr = endDate.toISOString().split('T')[0];
 
   try {
-    const activeStudents = db.prepare(`
+    const activeStudentsResult = await db.query(`
       SELECT id as enrollment_id, childName, scheduleDays
       FROM enrollments 
       WHERE status IN ('Enrolled', 'Approved')
-    `).all();
+    `);
 
-    const attendanceLogs = db.prepare(`
+    const attendanceLogsResult = await db.query(`
       SELECT enrollment_id, date, status
       FROM daily_attendance 
-      WHERE date >= ? AND date <= ?
-    `).all(startStr, endStr);
+      WHERE date >= $1 AND date <= $2
+    `, [startStr, endStr]);
 
     // Calculate dates array
     const dates = [];
@@ -122,7 +121,7 @@ router.get('/attendance/stats', authenticateAdmin, (req, res) => {
       curr.setDate(curr.getDate() + 1);
     }
 
-    const stats = activeStudents.map(student => {
+    const stats = activeStudentsResult.rows.map(student => {
       let expectedDays = 0;
       let attendedDays = 0;
       
@@ -139,7 +138,7 @@ router.get('/attendance/stats', authenticateAdmin, (req, res) => {
           expectedDays++;
           
           // Check if they attended
-          const log = attendanceLogs.find(l => l.enrollment_id === student.enrollment_id && l.date === d.dateStr);
+          const log = attendanceLogsResult.rows.find(l => l.enrollment_id === student.enrollment_id && l.date === d.dateStr);
           if (log && log.status === 'Present') {
             attendedDays++;
           }
@@ -164,25 +163,25 @@ router.get('/attendance/stats', authenticateAdmin, (req, res) => {
 
 // --- FEEDING MANAGEMENT ROUTES ---
 
-router.get('/feeding', authenticateAdmin, (req, res) => {
+router.get('/feeding', authenticateAdmin, async (req, res) => {
   try {
-    const activeStudents = db.prepare(`
+    const activeStudentsResult = await db.query(`
       SELECT id as enrollment_id, childName, specialNeeds, ageGroup 
       FROM enrollments 
       WHERE status IN ('Enrolled', 'Approved')
-    `).all();
-    res.json(activeStudents);
+    `);
+    res.json(activeStudentsResult.rows);
   } catch (error) {
     console.error('Fetch feeding error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
 
-router.put('/feeding/:id', authenticateAdmin, (req, res) => {
+router.put('/feeding/:id', authenticateAdmin, async (req, res) => {
   const { id } = req.params;
   const { specialNeeds } = req.body;
   try {
-    db.prepare('UPDATE enrollments SET specialNeeds = ? WHERE id = ?').run(specialNeeds || '', id);
+    await db.query('UPDATE enrollments SET specialNeeds = $1 WHERE id = $2', [specialNeeds || '', id]);
     res.json({ message: 'Dietary restrictions updated successfully' });
   } catch (error) {
     console.error('Update feeding error:', error);
@@ -194,15 +193,15 @@ router.put('/feeding/:id', authenticateAdmin, (req, res) => {
 // --- INCIDENT ROUTES ---
 
 // Get active incidents (e.g. sick room)
-router.get('/incidents', authenticateAdmin, (req, res) => {
+router.get('/incidents', authenticateAdmin, async (req, res) => {
   try {
-    const incidents = db.prepare(`
+    const incidentsResult = await db.query(`
       SELECT i.*, e.childName 
       FROM student_incidents i
       JOIN enrollments e ON i.enrollment_id = e.id
       ORDER BY i.created_at DESC
-    `).all();
-    res.json(incidents);
+    `);
+    res.json(incidentsResult.rows);
   } catch (error) {
     console.error('Fetch incidents error:', error);
     res.status(500).json({ error: 'Internal server error' });
@@ -210,14 +209,14 @@ router.get('/incidents', authenticateAdmin, (req, res) => {
 });
 
 // Create new incident
-router.post('/incidents', authenticateAdmin, validateRequest(incidentSchema), (req, res) => {
+router.post('/incidents', authenticateAdmin, validateRequest(incidentSchema), async (req, res) => {
   const { enrollment_id, date, incident_type, description } = req.body;
   
   try {
-    db.prepare(`
+    await db.query(`
       INSERT INTO student_incidents (enrollment_id, date, incident_type, description, logged_by)
-      VALUES (?, ?, ?, ?, ?)
-    `).run(enrollment_id, date, incident_type, description, req.user.username);
+      VALUES ($1, $2, $3, $4, $5)
+    `, [enrollment_id, date, incident_type, description, req.user.username]);
     
     res.status(201).json({ message: 'Incident logged successfully' });
   } catch (error) {
@@ -227,10 +226,10 @@ router.post('/incidents', authenticateAdmin, validateRequest(incidentSchema), (r
 });
 
 // Resolve an incident
-router.put('/incidents/:id/resolve', authenticateAdmin, (req, res) => {
+router.put('/incidents/:id/resolve', authenticateAdmin, async (req, res) => {
   const { id } = req.params;
   try {
-    db.prepare("UPDATE student_incidents SET status = 'Resolved' WHERE id = ?").run(id);
+    await db.query("UPDATE student_incidents SET status = 'Resolved' WHERE id = $1", [id]);
     res.json({ message: 'Incident resolved' });
   } catch (error) {
     console.error('Resolve incident error:', error);
@@ -239,10 +238,10 @@ router.put('/incidents/:id/resolve', authenticateAdmin, (req, res) => {
 });
 
 // Get Enrolled/Approved Students (for dropdown in incidents)
-router.get('/students', authenticateAdmin, (req, res) => {
+router.get('/students', authenticateAdmin, async (req, res) => {
   try {
-    const activeStudents = db.prepare('SELECT id, childName FROM enrollments WHERE status IN (?, ?)').all('Enrolled', 'Approved');
-    res.json(activeStudents);
+    const activeStudentsResult = await db.query('SELECT id, childName FROM enrollments WHERE status IN ($1, $2)', ['Enrolled', 'Approved']);
+    res.json(activeStudentsResult.rows);
   } catch (error) {
     console.error('Fetch active students error:', error);
     res.status(500).json({ error: 'Internal server error' });
