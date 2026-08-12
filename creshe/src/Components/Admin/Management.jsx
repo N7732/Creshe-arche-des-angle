@@ -424,6 +424,7 @@ export default function Management() {
                 ) : attendanceRecords.length === 0 ? (
                   <div className="p-12 text-center text-slate-500 font-medium">{t('admin.management.empty')}</div>
                 ) : (
+                  <>
                   {/* SWIPE HINT MOBILE */}
                 <div className="md:hidden flex items-center justify-end gap-1 text-xs text-slate-400 font-medium mb-3 mt-4">
                   <ArrowLeftRight className="w-3 h-3" /> {t('admin.swipe_hint')}
@@ -523,6 +524,7 @@ export default function Management() {
                       </tbody>
                     </table>
                   </div>
+                  </>
                 )
               ) : (
                 // Analytics View
@@ -531,6 +533,7 @@ export default function Management() {
                 ) : analyticsData.length === 0 ? (
                   <div className="p-12 text-center text-slate-500 font-medium">No analytics data available.</div>
                 ) : (
+                  <>
                   {/* SWIPE HINT MOBILE */}
                 <div className="md:hidden flex items-center justify-end gap-1 text-xs text-slate-400 font-medium mb-3 mt-4">
                   <ArrowLeftRight className="w-3 h-3" /> {t('admin.swipe_hint')}
@@ -572,6 +575,7 @@ export default function Management() {
                       </tbody>
                     </table>
                   </div>
+                  </>
                 )
               )}
             </div>
@@ -598,6 +602,7 @@ export default function Management() {
               {feedingLoading ? (
                 <div className="p-12 flex justify-center"><Loader2 className="w-8 h-8 animate-spin text-orange-500" /></div>
               ) : (
+                <>
                 {/* SWIPE HINT MOBILE */}
                 <div className="md:hidden flex items-center justify-end gap-1 text-xs text-slate-400 font-medium mb-3 mt-4">
                   <ArrowLeftRight className="w-3 h-3" /> {t('admin.swipe_hint')}
@@ -666,6 +671,7 @@ export default function Management() {
                     </tbody>
                   </table>
                 </div>
+                </>
               )}
             </div>
           </motion.div>

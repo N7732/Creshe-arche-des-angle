@@ -145,6 +145,7 @@ export default function Students() {
             {t('admin.students.empty')}
           </div>
         ) : (
+          <>
           {/* SWIPE HINT MOBILE */}
         <div className="md:hidden flex items-center justify-end gap-1 text-xs text-slate-400 font-medium mb-3 mt-4">
           <ArrowLeftRight className="w-3 h-3" /> {t('admin.swipe_hint')}
@@ -219,6 +220,7 @@ export default function Students() {
               </tbody>
             </table>
           </div>
+          </>
         )}
       </div>
     </div>
