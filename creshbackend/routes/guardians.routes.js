@@ -82,7 +82,7 @@ router.post('/send-email', async (req, res) => {
       bcc: emails,
       subject: subject,
       text: message,
-      html: \`<div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">\${message.replace(/\\n/g, '<br/>')}</div>\`
+      html: `<div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">${message.replace(/\n/g, '<br/>')}</div>`
     };
 
     const info = await transporter.sendMail(mailOptions);
