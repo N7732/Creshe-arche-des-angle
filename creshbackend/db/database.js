@@ -1,8 +1,11 @@
 const { Pool } = require('pg');
 require('dotenv').config({ path: require('path').resolve(__dirname, '../.env') });
 
+const dbUrl = process.env.DATABASE_URL ? process.env.DATABASE_URL.trim() : process.env.DATABASE_URL;
+console.log('Database URL configured:', dbUrl ? 'YES (Length: ' + dbUrl.length + ')' : 'NO');
+
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
+  connectionString: dbUrl,
   ssl: {
     rejectUnauthorized: false
   }
