@@ -7,7 +7,7 @@ import { fetcher } from '../../utils/fetcher';
 
 export default function Students() {
   const { t } = useTranslation();
-  const { data, error, isLoading } = useSWR('https://backend-creshe.onrender.com/api/enrollments', fetcher);
+  const { data, error, isLoading } = useSWR(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/enrollments`, fetcher);
   
   useEffect(() => {
     if (error && error.status === 401) {
@@ -26,7 +26,7 @@ export default function Students() {
   const updateStatus = async (id, newStatus) => {
     try {
       const token = localStorage.getItem('authToken');
-      const res = await fetch(`https://backend-creshe.onrender.com/api/enrollments/${id}/status`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/enrollments/${id}/status`, {
         method: 'PUT',
         headers: { 
           'Content-Type': 'application/json',
@@ -35,7 +35,7 @@ export default function Students() {
         body: JSON.stringify({ status: newStatus, currentProgressCode: 0 })
       });
       if (!res.ok) throw new Error('Update failed');
-      mutate('https://backend-creshe.onrender.com/api/enrollments');
+      mutate(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/enrollments`);
     } catch (error) {
       console.error('Error updating status:', error);
       alert('Failed to update status');

@@ -12,7 +12,7 @@ export default function Gallery({ initialCategory = 'All' }) {
   const [activeCategory, setActiveCategory] = useState(initialCategory);
   const [selectedImage, setSelectedImage] = useState(null);
 
-  const { data, isLoading } = useSWR('https://backend-creshe.onrender.com/api/galleries', fetcher);
+  const { data, isLoading } = useSWR(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/galleries`, fetcher);
   const galleries = Array.isArray(data) ? data : [];
   const loading = isLoading;
 

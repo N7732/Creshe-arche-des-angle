@@ -26,7 +26,7 @@ function FrontendApp() {
   const [galleryCategory, setGalleryCategory] = useState('All');
   const [isScrolled, setIsScrolled] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(false);
-  const { data: settingsData } = useSWR('https://backend-creshe.onrender.com/api/settings', fetcher);
+  const { data: settingsData } = useSWR(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/settings`, fetcher);
   
   const settings = React.useMemo(() => {
     const settingsObj = {};

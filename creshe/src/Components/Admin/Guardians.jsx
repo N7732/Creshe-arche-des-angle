@@ -7,7 +7,7 @@ import { fetcher } from '../../utils/fetcher';
 
 export default function Guardians() {
   const { t } = useTranslation();
-  const { data, isLoading } = useSWR('https://backend-creshe.onrender.com/api/guardians', fetcher);
+  const { data, isLoading } = useSWR(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/guardians`, fetcher);
   const guardians = Array.isArray(data) ? data : [];
   const loading = isLoading;
 
@@ -52,7 +52,7 @@ export default function Guardians() {
     setSending(true);
     setSendSuccess('');
     try {
-      const res = await fetch('https://backend-creshe.onrender.com/api/guardians/send-email', {
+      const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/guardians/send-email`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

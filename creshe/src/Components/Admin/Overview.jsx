@@ -9,7 +9,7 @@ import { useTranslation } from 'react-i18next';
 import useSWR from 'swr';
 import { fetcher } from '../../utils/fetcher';
 
-const API_BASE = 'https://backend-creshe.onrender.com/api';
+const API_BASE = `${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api`;
 
 export default function Overview() {
   const { t } = useTranslation();

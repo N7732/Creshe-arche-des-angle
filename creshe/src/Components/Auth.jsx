@@ -21,7 +21,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess }) {
     setLoading(true);
     setError('');
     try {
-      const response = await fetch('https://backend-creshe.onrender.com/api/parents/google', {
+      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/parents/google`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ token: credentialResponse.credential })
@@ -47,7 +47,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess }) {
     if (!isLogin) {
       // Registration only applies to parents
       try {
-        const response = await fetch('https://backend-creshe.onrender.com/api/parents/register', {
+        const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/parents/register`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ fullName, email, password })
@@ -69,7 +69,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess }) {
     // Login Flow: Try Parent -> Fallback to Admin
     try {
       // 1. Try Parent Login
-      const parentResponse = await fetch('https://backend-creshe.onrender.com/api/parents/login', {
+      const parentResponse = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/parents/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password })
@@ -79,7 +79,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess }) {
       
       if (!parentResponse.ok) {
         // If parent fails, maybe it's an admin?
-        const adminResponse = await fetch('https://backend-creshe.onrender.com/api/auth/login', {
+        const adminResponse = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/auth/login`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ username: email, password })
