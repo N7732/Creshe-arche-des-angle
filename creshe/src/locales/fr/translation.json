@@ -10,18 +10,34 @@
     "gallery": "Galerie",
     "contact": "Nous contacter",
     "enrollments": "Inscriptions",
-    "signup": "S'inscrire/Se connecter",
+    "signup": "Connexion",
     "profile": "Profil",
     "admin": "Tableau de bord",
     "signout": "Déconnexion"
   },
   "footer": {
-    "brand_desc": "La CRÈCHE ARCHE DES ANGES de Bugesera a pour vocation d'offrir un environnement aimant, sûr et stimulant où chaque enfant peut apprendre, jouer et grandir.",
+    "brand_desc": "CRÈCHE ARCHE DES ANGES de Bugesera s'engage à offrir un environnement aimant, sûr et inspirant où chaque enfant peut apprendre, jouer et grandir.",
     "quick_links": "Liens Rapides",
-    "contact": "Nous Contacter",
-    "connect": "Rejoignez-nous",
+    "contact": "Nous contacter",
     "rights": "Tous droits réservés",
     "developed": "Développé par"
+  },
+  "auth": {
+    "welcome_back": "Bon retour !",
+    "join_us": "Rejoignez-nous",
+    "signin_sub": "Connectez-vous pour gérer vos inscriptions.",
+    "signup_sub": "Créez un compte pour inscrire votre enfant.",
+    "full_name": "Nom complet",
+    "email": "Adresse E-mail",
+    "password": "Mot de passe",
+    "signin": "Se connecter",
+    "create_account": "Créer un compte",
+    "or_continue": "Ou Continuer Avec",
+    "no_account": "Vous n'avez pas de compte ? ",
+    "has_account": "Vous avez déjà un compte ? ",
+    "signup_link": "S'inscrire",
+    "signin_link": "Se connecter",
+    "google_failed": "Échec de connexion Google"
   },
   "home": {
     "welcome": "Bienvenue à la",

@@ -2,9 +2,11 @@ import React, { useState } from 'react';
 import { GoogleLogin } from '@react-oauth/google';
 import { motion, AnimatePresence } from 'motion/react';
 import { X, Loader2, Mail, Lock, User, ArrowRight } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../Context/AuthContext';
 
 export default function AuthModal({ isOpen, onClose, onSuccess }) {
+  const { t } = useTranslation();
   const [isLogin, setIsLogin] = useState(true);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -145,10 +147,10 @@ export default function AuthModal({ isOpen, onClose, onSuccess }) {
               </button>
               
               <h2 className="text-3xl font-black text-white drop-shadow-sm tracking-tight mb-2">
-                {isLogin ? 'Welcome Back!' : 'Join Us Today'}
+                {isLogin ? t('auth.welcome_back') : t('auth.join_us')}
               </h2>
               <p className="text-amber-50 font-medium">
-                {isLogin ? 'Sign in to manage your enrollments.' : 'Create an account to enroll your child.'}
+                {isLogin ? t('auth.signin_sub') : t('auth.signup_sub')}
               </p>
             </div>
 
@@ -162,7 +164,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess }) {
               <form onSubmit={handleSubmit} className="space-y-5">
                 {!isLogin && (
                   <div>
-                    <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">Full Name</label>
+                    <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">{t('auth.full_name')}</label>
                     <div className="relative">
                       <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                         <User className="w-5 h-5 text-slate-400" />
@@ -177,7 +179,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess }) {
                 )}
                 
                 <div>
-                  <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">Email Address</label>
+                  <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">{t('auth.email')}</label>
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                       <Mail className="w-5 h-5 text-slate-400" />
@@ -191,7 +193,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess }) {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">Password</label>
+                  <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">{t('auth.password')}</label>
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                       <Lock className="w-5 h-5 text-slate-400" />
@@ -210,7 +212,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess }) {
                 >
                   {loading ? <Loader2 className="w-6 h-6 animate-spin" /> : (
                     <>
-                      {isLogin ? 'Sign In' : 'Create Account'} 
+                      {isLogin ? t('auth.signin') : t('auth.create_account')} 
                       <ArrowRight className="w-5 h-5 transform group-hover:translate-x-1 transition-transform" />
                     </>
                   )}
@@ -219,13 +221,13 @@ export default function AuthModal({ isOpen, onClose, onSuccess }) {
 
               <div className="mt-8 relative flex items-center justify-center">
                 <div className="absolute inset-x-0 h-px bg-slate-200 dark:bg-slate-700"></div>
-                <div className="relative bg-white dark:bg-slate-800 px-4 text-xs font-bold text-slate-400 uppercase tracking-widest">Or Continue With</div>
+                <div className="relative bg-white dark:bg-slate-800 px-4 text-xs font-bold text-slate-400 uppercase tracking-widest">{t('auth.or_continue')}</div>
               </div>
 
               <div className="mt-8 flex justify-center">
                 <GoogleLogin
                   onSuccess={handleGoogleSuccess}
-                  onError={() => setError('Google Login Failed')}
+                  onError={() => setError(t('auth.google_failed'))}
                   theme="filled_blue"
                   shape="pill"
                   size="large"
@@ -235,12 +237,13 @@ export default function AuthModal({ isOpen, onClose, onSuccess }) {
 
               <div className="mt-8 text-center">
                 <p className="text-slate-600 dark:text-slate-400 font-medium">
-                  {isLogin ? "Don't have an account? " : "Already have an account? "}
+                  {isLogin ? t('auth.no_account') : t('auth.has_account')}
                   <button 
+                    type="button"
                     onClick={() => { setIsLogin(!isLogin); setError(''); }}
                     className="text-indigo-600 dark:text-indigo-400 font-bold hover:underline"
                   >
-                    {isLogin ? 'Sign up' : 'Sign in'}
+                    {isLogin ? t('auth.signup_link') : t('auth.signin_link')}
                   </button>
                 </p>
               </div>

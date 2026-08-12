@@ -10,7 +10,7 @@
     "gallery": "Gallery",
     "contact": "Contact Us",
     "enrollments": "Enrollments",
-    "signup": "Signup/Signin",
+    "signup": "Sign In",
     "profile": "Profile",
     "admin": "Admin Dashboard",
     "signout": "Sign Out"
@@ -19,9 +19,25 @@
     "brand_desc": "CRÈCHE ARCHE DES ANGES de Bugesera is dedicated to providing a loving, safe and inspiring environment where every child can learn, play and grow.",
     "quick_links": "Quick Links",
     "contact": "Contact Us",
-    "connect": "Connect With Us",
-    "rights": "All Rights Reserved",
-    "developed": "Developed under"
+    "rights": "All rights reserved",
+    "developed": "Developed by"
+  },
+  "auth": {
+    "welcome_back": "Welcome Back!",
+    "join_us": "Join Us Today",
+    "signin_sub": "Sign in to manage your enrollments.",
+    "signup_sub": "Create an account to enroll your child.",
+    "full_name": "Full Name",
+    "email": "Email Address",
+    "password": "Password",
+    "signin": "Sign In",
+    "create_account": "Create Account",
+    "or_continue": "Or Continue With",
+    "no_account": "Don't have an account? ",
+    "has_account": "Already have an account? ",
+    "signup_link": "Sign up",
+    "signin_link": "Sign in",
+    "google_failed": "Google Login Failed"
   },
   "home": {
     "welcome": "Welcome to",
